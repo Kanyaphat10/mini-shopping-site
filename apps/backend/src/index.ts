@@ -1,39 +1,24 @@
-import openapi from "@elysiajs/openapi";
-import { Elysia } from "elysia";
-import logixlysia from "logixlysia";
+import Elysia from 'elysia'
+import { PrismaClient } from '@prisma/client'
+import { authRoutes } from './routes/auth'
+import { productRoutes } from './routes/products'
+import { cartRoutes } from './routes/cart'
+import { orderRoutes } from './routes/orders'
+import { shipmentRoutes } from './routes/shipments'
+import { adminRoutes } from './routes/admin'
 
-const app = new Elysia()
- .use(logixlysia({
-      config: {
-        showStartupMessage: true,
-        startupMessageFormat: 'simple',
-        timestamp: {
-          translateTime: 'yyyy-mm-dd HH:MM:ss.SSS',
-        },
-        ip: true,
-        customLogFormat:
-          '{method} {status} {level} {duration} {pathname} {message} {ip}',
-      },
-    })
-  )
-    .use(openapi({
-      path: '/docs',
-      provider: 'scalar',
-      scalar:{
-        version: '1.44.15',
-      },
-      documentation: {
-        info: {
-          title: 'Mini Shopping Site API',
-          version: '1.0.0',
-          description: 'API documentation for mini Shopping Site',
-        },
-        tags: []
-      },
-    })
-  )
-.get("/", () => "Hello Elysia").listen(3000);
+const prisma = new PrismaClient()
 
-console.log(
-  `🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`
-);
+const app = new Elysia({ prefix: '/api' })
+  .decorate({ prisma })
+  .use(authRoutes)
+  .use(productRoutes)
+  .use(cartRoutes)
+  .use(orderRoutes)
+  .use(shipmentRoutes)
+  .use(adminRoutes)
+  .get('/', () => ({ message: 'Mini Shopping Site API' }))
+  .options('*', () => new Response(null, { status: 200 }))
+  .listen(process.env.PORT || 3001)
+
+console.log(`Server running at http://localhost:${process.env.PORT || 3001}`)
