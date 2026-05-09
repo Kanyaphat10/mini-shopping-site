@@ -1,5 +1,6 @@
 import { Elysia, t } from 'elysia'
 import { PrismaClient } from '@prisma/client'
+import { hashPassword } from '../utils/auth';
 
 export const adminRoutes = new Elysia({ prefix: '/admin' })
   .get('/users', async ({ headers, prisma }: { headers: any; prisma: PrismaClient }) => {
@@ -73,7 +74,7 @@ export const adminRoutes = new Elysia({ prefix: '/admin' })
         const admin = await prisma.user.create({
           data: {
             email: 'admin@example.com',
-            password: 'admin123',
+            password: await hashPassword('admin123'),
             name: 'Admin User',
             role: 'ADMIN',
           },
@@ -82,7 +83,7 @@ export const adminRoutes = new Elysia({ prefix: '/admin' })
         const customer1 = await prisma.user.create({
           data: {
             email: 'customer@example.com',
-            password: 'password123',
+            password: await hashPassword('password123'),
             name: 'John Doe',
             role: 'CUSTOMER',
           },
@@ -91,7 +92,7 @@ export const adminRoutes = new Elysia({ prefix: '/admin' })
         const customer2 = await prisma.user.create({
           data: {
             email: 'jane@example.com',
-            password: 'password123',
+            password: await hashPassword('admin123'),
             name: 'Jane Smith',
             role: 'CUSTOMER',
           },
@@ -100,7 +101,7 @@ export const adminRoutes = new Elysia({ prefix: '/admin' })
         const courier = await prisma.user.create({
           data: {
             email: 'courier@example.com',
-            password: 'password123',
+            password: await hashPassword('password123'),
             name: 'Bob Delivery',
             role: 'COURIER',
           },
@@ -113,7 +114,7 @@ export const adminRoutes = new Elysia({ prefix: '/admin' })
               description: 'High-performance laptop for professionals',
               price: '999.99',
               stock: 10,
-              image: 'https://via.placeholder.com/300?text=Laptop',
+              image: 'https://placehold.co/300x300?text=Laptop',
             },
           }),
           prisma.product.create({
@@ -122,7 +123,7 @@ export const adminRoutes = new Elysia({ prefix: '/admin' })
               description: 'Ergonomic wireless mouse',
               price: '29.99',
               stock: 50,
-              image: 'https://via.placeholder.com/300?text=Mouse',
+              image: 'https://placehold.co/300x300?text=Mouse',
             },
           }),
           prisma.product.create({
@@ -131,7 +132,7 @@ export const adminRoutes = new Elysia({ prefix: '/admin' })
               description: 'Multi-port USB-C hub for connectivity',
               price: '49.99',
               stock: 30,
-              image: 'https://via.placeholder.com/300?text=Hub',
+              image: 'https://placehold.co/300x300?text=Hub',
             },
           }),
         ])
