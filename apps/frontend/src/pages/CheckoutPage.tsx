@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -27,14 +27,16 @@ export default function CheckoutPage() {
     resolver: zodResolver(schema),
   })
 
-  if (!user) {
-    navigate('/login')
-    return null
-  }
+  useEffect(() => {
+    if (!user) {
+      navigate("/login");
+    } else if (items.length === 0) {
+      navigate("/cart");
+    }
+  }, [user, items, navigate]);
 
-  if (items.length === 0) {
-    navigate('/cart')
-    return null
+  if (!user || items.length === 0) {
+    return null;
   }
 
   const onSubmit = async (data: FormData) => {
