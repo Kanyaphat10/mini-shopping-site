@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: admin
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: mini-shop
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Generate Prisma Client
+        run: cd apps/backend && bunx prisma generate
+
+      - name: DB Push
+        run: cd apps/backend && bunx prisma db push --accept-data-loss
+        env:
+          DATABASE_URL: postgresql://admin:password@localhost:5432/mini-shop
+
+      - name: Seed Database
+        run: cd apps/backend && bun run prisma/seed.ts
+        env:
+          DATABASE_URL: postgresql://admin:password@localhost:5432/mini-shop
+
+      - name: Run Backend Tests
+        run: cd apps/backend && bun run test
+        env:
+          DATABASE_URL: postgresql://admin:password@localhost:5432/mini-shop
+
+      - name: Run Frontend Tests
+        run: cd apps/frontend && bun run test
