@@ -12,8 +12,9 @@ import CartPage from './pages/CartPage'
 import CheckoutPage from './pages/CheckoutPage'
 import OrdersPage from './pages/OrdersPage'
 import LoginPage from './pages/LoginPage'
+import StaffLoginPage from './pages/StaffLoginPage'
 import RegisterPage from './pages/RegisterPage'
-import GoogleCallbackPage from './pages/GoogleCallbackPage'
+import AuthSuccessPage from './pages/AuthSuccessPage'
 import CourierDashboard from './pages/CourierDashboard'
 import AdminDashboard from './pages/AdminDashboard'
 import { authService } from './services/api'
@@ -57,12 +58,16 @@ function App() {
               element={user ? <Navigate to="/" /> : <LoginPage />} 
             />
             <Route 
+              path="/staff/login" 
+              element={user ? <Navigate to="/" /> : <StaffLoginPage />} 
+            />
+            <Route 
               path="/register" 
               element={user ? <Navigate to="/" /> : <RegisterPage />} 
             />
             <Route 
-              path="/auth/google/callback" 
-              element={<GoogleCallbackPage />} 
+              path="/auth/success" 
+              element={<AuthSuccessPage />} 
             />
 
             {/* Protected customer routes */}

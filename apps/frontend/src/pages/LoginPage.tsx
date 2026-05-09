@@ -50,8 +50,8 @@ export default function LoginPage() {
     <div className="flex items-center justify-center min-h-96">
       <div className="w-full max-w-md">
         <div className="bg-card rounded-lg border border-border p-8">
-          <h1 className="text-3xl font-bold mb-2">Welcome Back</h1>
-          <p className="text-muted-foreground mb-6">Sign in to your account</p>
+          <h1 className="text-3xl font-bold mb-2">Customer Sign In</h1>
+          <p className="text-muted-foreground mb-6">Welcome to Mini Shop</p>
 
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
@@ -133,6 +133,13 @@ export default function LoginPage() {
             Don&apos;t have an account?{' '}
             <Link to="/register" className="text-primary font-semibold hover:underline">
               Create one
+            </Link>
+          </p>
+
+          <p className="text-center text-xs text-muted-foreground mt-4 border-t border-border pt-4">
+            Are you a staff member?{' '}
+            <Link to="/staff/login" className="text-primary hover:underline">
+              Go to Staff Portal
             </Link>
           </p>
         </div>
