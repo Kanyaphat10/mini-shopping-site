@@ -8,13 +8,14 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String?
-  name      String
-  role      UserRole @default(CUSTOMER)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(cuid())
+  email       String   @unique
+  password    String?
+  name        String
+  role        UserRole @default(CUSTOMER)
+  vehicleType String? // Specific for COURIER role
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   cartItems     CartItem[]
   orders        Order[]
@@ -33,19 +34,28 @@ enum UserRole {
 }
 
 model Product {
-  id          String   @id @default(cuid())
-  name        String
-  description String
-  price       Decimal  @db.Decimal(10, 2)
-  image       String?
-  stock       Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            String        @id @default(cuid())
+  sku           String        @unique
+  name          String
+  description   String
+  price         Decimal       @db.Decimal(10, 2)
+  image         String?
+  stock         Int           @default(0)
+  productStatus ProductStatus @default(ACTIVE)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 
   cartItems  CartItem[]
   orderItems OrderItem[]
 
   @@index([name])
+  @@index([sku])
+}
+
+enum ProductStatus {
+  ACTIVE
+  OUT_OF_STOCK
+  HIDDEN
 }
 
 model Cart {
