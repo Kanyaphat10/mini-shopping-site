@@ -5,11 +5,13 @@ import { ShoppingCart } from 'lucide-react'
 
 interface Product {
   id: string
+  sku: string
   name: string
   description: string
   price: string
   image?: string
   stock: number
+  productStatus: string
 }
 
 export default function ProductsPage() {
@@ -40,49 +42,56 @@ export default function ProductsPage() {
   }
 
   return (
-    <div>
-      <h1 className="text-4xl font-bold mb-8">Our Products</h1>
+    <div className="animate-in fade-in">
+      <h1 className="text-4xl font-extrabold mb-8 tracking-tight">Our Collection</h1>
 
       {products.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground text-lg">No products available yet.</p>
+        <div className="text-center py-16 bg-muted/30 rounded-2xl border border-border">
+          <p className="text-muted-foreground text-lg">No products available yet. Check back soon!</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {products.map((product) => (
-            <div key={product.id} className="bg-card rounded-lg border border-border overflow-hidden hover:shadow-lg transition">
-              <div className="h-48 bg-muted flex items-center justify-center">
-                {product.image ? (
-                  <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="text-4xl">📦</div>
-                )}
-              </div>
-
-              <div className="p-4 space-y-3">
-                <h3 className="font-bold text-lg line-clamp-2">{product.name}</h3>
-                <p className="text-muted-foreground text-sm line-clamp-2">{product.description}</p>
-
-                <div className="flex items-center justify-between pt-2">
-                  <span className="text-2xl font-bold text-primary">${parseFloat(product.price).toFixed(2)}</span>
-                  <span className={`text-sm px-3 py-1 rounded-full ${
-                    product.stock > 0
-                      ? 'bg-green-100 text-green-700'
-                      : 'bg-red-100 text-red-700'
-                  }`}>
-                    {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
-                  </span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+          {products.map((product) => {
+            const isOutOfStock = product.stock <= 0 || product.productStatus === 'OUT_OF_STOCK'
+            
+            return (
+              <div key={product.id} className="group flex flex-col bg-card rounded-2xl border border-border overflow-hidden hover:shadow-xl transition-all duration-300">
+                <div className="h-56 bg-muted flex items-center justify-center relative overflow-hidden">
+                  {product.image ? (
+                    <img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  ) : (
+                    <div className="text-5xl opacity-50 transform group-hover:scale-110 transition-transform duration-500">🛍️</div>
+                  )}
+                  {isOutOfStock && (
+                    <div className="absolute inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center">
+                      <span className="font-bold text-lg text-foreground px-4 py-2 bg-background/80 rounded-full shadow-sm">Out of Stock</span>
+                    </div>
+                  )}
                 </div>
 
-                <Link
-                  to={`/products/${product.id}`}
-                  className="block w-full bg-primary text-primary-foreground py-2 rounded-lg text-center font-semibold hover:opacity-90 transition"
-                >
-                  View Details
-                </Link>
+                <div className="p-5 flex flex-col flex-1">
+                  <div className="flex items-start justify-between mb-2 gap-2">
+                    <h3 className="font-bold text-lg line-clamp-2 leading-tight">{product.name}</h3>
+                    <span className="text-xl font-bold text-primary shrink-0">${parseFloat(product.price).toFixed(2)}</span>
+                  </div>
+                  
+                  <p className="text-muted-foreground text-sm line-clamp-2 mb-4 flex-1">{product.description}</p>
+
+                  <Link
+                    to={`/products/${product.id}`}
+                    className={`block w-full py-2.5 rounded-xl text-center font-semibold transition-all ${
+                      isOutOfStock 
+                        ? 'bg-muted text-muted-foreground cursor-not-allowed' 
+                        : 'bg-primary text-primary-foreground hover:opacity-90 shadow-sm hover:shadow active:scale-[0.98]'
+                    }`}
+                    onClick={(e) => isOutOfStock && e.preventDefault()}
+                  >
+                    {isOutOfStock ? 'Currently Unavailable' : 'View Details'}
+                  </Link>
+                </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
     </div>
