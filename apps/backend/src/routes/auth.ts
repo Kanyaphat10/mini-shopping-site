@@ -156,16 +156,60 @@ export const authRoutes = new Elysia({ prefix: '/auth' })
     }
   )
 
-  // Google OAuth Callback
-  .post(
-    '/google/callback',
-    async ({ body, prisma }: { body: any; prisma: PrismaClient }) => {
-      try {
-        const { email, name, id: googleId } = body
+  // Google OAuth Initializer
+  .get('/google', ({ redirect }) => {
+    const clientId = process.env.GOOGLE_CLIENT_ID
+    const redirectUri = process.env.GOOGLE_REDIRECT_URI
+    const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=email profile`
+    return redirect(url)
+  })
 
-        if (!email || !googleId) {
-          return { error: 'Invalid OAuth data' }
+  // Google OAuth Callback (Real Flow)
+  .get(
+    '/google/callback',
+    async ({ query, prisma, set, redirect }: { query: any; prisma: PrismaClient; set: any; redirect: any }) => {
+      try {
+        const { code } = query
+        if (!code) {
+          set.status = 400
+          return { error: 'No code provided' }
         }
+
+        // Exchange code for token
+        const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({
+            client_id: process.env.GOOGLE_CLIENT_ID || '',
+            client_secret: process.env.GOOGLE_CLIENT_SECRET || '',
+            redirect_uri: process.env.GOOGLE_REDIRECT_URI || '',
+            grant_type: 'authorization_code',
+            code,
+          }),
+        })
+
+        const tokenData = await tokenRes.json()
+
+        if (tokenData.error) {
+          set.status = 400
+          return { error: tokenData.error_description || tokenData.error }
+        }
+
+        // Fetch user info
+        const userRes = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+          headers: { Authorization: `Bearer ${tokenData.access_token}` },
+        })
+
+        const userData = await userRes.json()
+
+        if (!userData.email || !userData.id) {
+          set.status = 400
+          return { error: 'Failed to fetch user data from Google' }
+        }
+
+        const email = userData.email
+        const name = userData.name
+        const googleId = userData.id
 
         // Find or create OAuth account
         let user = await prisma.user.findUnique({
@@ -207,21 +251,11 @@ export const authRoutes = new Elysia({ prefix: '/auth' })
         const token = generateToken(user.id, user.email, user.role)
         const session = await createSession(user.id)
 
-        return {
-          user: { id: user.id, email: user.email, name: user.name, role: user.role },
-          token,
-          sessionToken: session.token,
-        }
+        return redirect(`http://localhost:5173/auth/success?token=${token}&sessionToken=${session.token}`)
       } catch (error: any) {
+        set.status = 500
         return { error: error.message }
       }
-    },
-    {
-      body: t.Object({
-        email: t.String(),
-        name: t.String(),
-        id: t.String(),
-      }),
     }
   )
 
