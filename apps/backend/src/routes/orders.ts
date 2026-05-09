@@ -1,6 +1,7 @@
 import { Elysia, t } from 'elysia'
 import { PrismaClient } from '@prisma/client'
 import { CreateOrderSchema } from '../utils/schemas'
+import { verifyToken } from '../utils/auth'
 
 export const orderRoutes = new Elysia({ prefix: '/orders' })
   .get('/', async ({ headers, prisma }: { headers: any; prisma: PrismaClient }) => {
@@ -8,7 +9,9 @@ export const orderRoutes = new Elysia({ prefix: '/orders' })
       const token = headers['authorization']?.replace('Bearer ', '')
       if (!token) return { error: 'Unauthorized' }
 
-      const userId = 'user-id-from-token'
+      const payload = verifyToken(token)
+      if (!payload) return { error: 'Invalid token' }
+      const userId = payload.userId
 
       const orders = await prisma.order.findMany({
         where: { userId },
@@ -51,7 +54,9 @@ export const orderRoutes = new Elysia({ prefix: '/orders' })
         if (!token) return { error: 'Unauthorized' }
 
         const validated = CreateOrderSchema.parse(body)
-        const userId = 'user-id-from-token'
+        const payload = verifyToken(token)
+        if (!payload) return { error: 'Invalid token' }
+        const userId = payload.userId
 
         const cart = await prisma.cart.findUnique({
           where: { userId },

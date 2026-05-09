@@ -1,6 +1,7 @@
 import { Elysia, t } from 'elysia'
 import { PrismaClient } from '@prisma/client'
 import { AddToCartSchema } from '../utils/schemas'
+import { verifyToken } from '../utils/auth'
 
 export const cartRoutes = new Elysia({ prefix: '/cart' })
   .get('/', async ({ headers, prisma }: { headers: any; prisma: PrismaClient }) => {
@@ -8,7 +9,9 @@ export const cartRoutes = new Elysia({ prefix: '/cart' })
       const token = headers['authorization']?.replace('Bearer ', '')
       if (!token) return { error: 'Unauthorized' }
 
-      const userId = 'user-id-from-token'
+      const payload = verifyToken(token)
+      if (!payload) return { error: 'Invalid token' }
+      const userId = payload.userId
 
       const cart = await prisma.cart.findUnique({
         where: { userId },
@@ -34,7 +37,9 @@ export const cartRoutes = new Elysia({ prefix: '/cart' })
         if (!token) return { error: 'Unauthorized' }
 
         const validated = AddToCartSchema.parse(body)
-        const userId = 'user-id-from-token'
+        const payload = verifyToken(token)
+        if (!payload) return { error: 'Invalid token' }
+        const userId = payload.userId
 
         let cart = await prisma.cart.findUnique({
           where: { userId },
@@ -90,8 +95,10 @@ export const cartRoutes = new Elysia({ prefix: '/cart' })
         const token = headers['authorization']?.replace('Bearer ', '')
         if (!token) return { error: 'Unauthorized' }
 
-        const userId = 'user-id-from-token'
-        
+        const payload = verifyToken(token)
+        if (!payload) return { error: 'Invalid token' }
+        const userId = payload.userId
+
         const cart = await prisma.cart.findUnique({
           where: { userId },
         })
