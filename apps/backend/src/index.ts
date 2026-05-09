@@ -1,4 +1,5 @@
 import Elysia from 'elysia'
+import { cors } from '@elysiajs/cors'
 import { PrismaClient } from '@prisma/client'
 import { authRoutes } from './routes/auth'
 import { productRoutes } from './routes/products'
@@ -10,6 +11,11 @@ import { adminRoutes } from './routes/admin'
 const prisma = new PrismaClient()
 
 const app = new Elysia({ prefix: '/api' })
+// Localhost:5173 and localhost:5174 are allowed to call the API.
+  .use(cors({
+    origin: ['http://localhost:5173', 'http://localhost:5174'],
+    credentials: true,
+  })) 
   .decorate({ prisma })
   .use(authRoutes)
   .use(productRoutes)
@@ -18,7 +24,6 @@ const app = new Elysia({ prefix: '/api' })
   .use(shipmentRoutes)
   .use(adminRoutes)
   .get('/', () => ({ message: 'Mini Shopping Site API' }))
-  .options('*', () => new Response(null, { status: 200 }))
   .listen(process.env.PORT || 3001)
 
 console.log(`Server running at http://localhost:${process.env.PORT || 3001}`)
