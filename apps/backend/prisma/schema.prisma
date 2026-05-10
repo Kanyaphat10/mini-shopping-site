@@ -112,6 +112,7 @@ enum OrderStatus {
   SHIPPED
   DELIVERED
   CANCELLED
+  SETTLED
 }
 
 model OrderItem {
