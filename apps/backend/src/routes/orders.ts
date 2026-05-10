@@ -67,33 +67,53 @@ export const orderRoutes = new Elysia({ prefix: '/orders' })
           return { error: 'Cart is empty' }
         }
 
+        // Validate stock
+        for (const item of cart.items) {
+          if (item.product.stock < item.quantity) {
+            return { error: `Product ${item.product.name} is out of stock or does not have enough quantity` }
+          }
+        }
+
         const totalPrice = cart.items.reduce((sum: number, item: any) => 
           sum + (Number(item.product.price) * item.quantity), 0
         )
 
-        const order = await prisma.order.create({
-          data: {
-            userId,
-            shippingAddr: validated.shippingAddr,
-            totalPrice: totalPrice.toString(),
-            items: {
-              create: cart.items.map((item: any) => ({
-                productId: item.productId,
-                quantity: item.quantity,
-                price: item.product.price,
-              })),
-            },
-            payment: {
-              create: {
-                amount: totalPrice.toString(),
+        // Use transaction to ensure consistency
+        const order = await prisma.$transaction(async (tx) => {
+          // Decrement stock
+          for (const item of cart.items) {
+            await tx.product.update({
+              where: { id: item.productId },
+              data: { stock: { decrement: item.quantity } },
+            })
+          }
+
+          const createdOrder = await tx.order.create({
+            data: {
+              userId,
+              shippingAddr: validated.shippingAddr,
+              totalPrice: totalPrice.toString(),
+              items: {
+                create: cart.items.map((item: any) => ({
+                  productId: item.productId,
+                  quantity: item.quantity,
+                  price: item.product.price,
+                })),
+              },
+              payment: {
+                create: {
+                  amount: totalPrice.toString(),
+                },
               },
             },
-          },
-          include: { items: true, payment: true },
-        })
+            include: { items: true, payment: true },
+          })
 
-        await prisma.cartItem.deleteMany({
-          where: { cartId: cart.id },
+          await tx.cartItem.deleteMany({
+            where: { cartId: cart.id },
+          })
+
+          return createdOrder
         })
 
         return order

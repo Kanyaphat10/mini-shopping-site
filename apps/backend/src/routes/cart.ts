@@ -86,6 +86,24 @@ export const cartRoutes = new Elysia({ prefix: '/cart' })
       } catch (error: any) {
         return { error: error.message }
       }
+  )
+  .put(
+    '/item/:itemId',
+    async ({ params: { itemId }, body, prisma }: { params: any; body: any; prisma: PrismaClient }) => {
+      try {
+        const item = await prisma.cartItem.update({
+          where: { id: itemId },
+          data: { quantity: body.quantity },
+        })
+        return item
+      } catch (error: any) {
+        return { error: error.message }
+      }
+    },
+    {
+      body: t.Object({
+        quantity: t.Number(),
+      }),
     }
   )
   .post(
