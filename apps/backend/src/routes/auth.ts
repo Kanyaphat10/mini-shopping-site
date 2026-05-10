@@ -15,7 +15,7 @@ export const authRoutes = new Elysia({ prefix: '/auth' })
   // Email/Password Registration
   .post(
     '/register',
-    async ({ body, prisma }: any) => {
+    async ({ body, prisma, set }: any) => {
       try {
         const validated = RegisterSchema.parse(body)
 
@@ -24,7 +24,8 @@ export const authRoutes = new Elysia({ prefix: '/auth' })
         })
 
         if (existingUser) {
-          return { error: 'User already exists' }
+          set.status = 409
+          return { error: 'EMAIL_EXISTS' }
         }
 
         const hashedPassword = await hashPassword(validated.password)
