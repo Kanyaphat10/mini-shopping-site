@@ -7,9 +7,12 @@ export default function HomePage() {
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-primary to-accent rounded-lg p-12 text-white">
         <div className="max-w-2xl">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Welcome to MiniShop</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">
+            Welcome to MiniShop
+          </h1>
           <p className="text-lg mb-6 text-white/90">
-            Discover amazing products at unbeatable prices. Shop now and get what you love delivered to your door.
+            Discover amazing products at unbeatable prices. Shop now and get
+            what you love delivered to your door.
           </p>
           <Link
             to="/products"
@@ -27,7 +30,9 @@ export default function HomePage() {
             🚚
           </div>
           <h3 className="text-xl font-bold mb-2">Fast Delivery</h3>
-          <p className="text-muted-foreground">Get your orders delivered quickly with our reliable courier service.</p>
+          <p className="text-muted-foreground">
+            Get your orders delivered quickly with our reliable courier service.
+          </p>
         </div>
 
         <div className="p-6 bg-card rounded-lg border border-border">
@@ -35,7 +40,9 @@ export default function HomePage() {
             💳
           </div>
           <h3 className="text-xl font-bold mb-2">Secure Payment</h3>
-          <p className="text-muted-foreground">Your payments are safe with our encrypted payment system.</p>
+          <p className="text-muted-foreground">
+            Your payments are safe with our encrypted payment system.
+          </p>
         </div>
 
         <div className="p-6 bg-card rounded-lg border border-border">
@@ -43,21 +50,25 @@ export default function HomePage() {
             💯
           </div>
           <h3 className="text-xl font-bold mb-2">Quality Assured</h3>
-          <p className="text-muted-foreground">All products are verified and checked for quality.</p>
+          <p className="text-muted-foreground">
+            All products are verified and checked for quality.
+          </p>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="bg-secondary text-white rounded-lg p-12 text-center">
+      <section className="bg-primary text-primary-foreground rounded-lg p-12 text-center">
         <h2 className="text-3xl font-bold mb-4">Ready to Start Shopping?</h2>
-        <p className="text-lg mb-6">Browse our collection of premium products curated just for you.</p>
+        <p className="text-lg mb-6">
+          Browse our collection of premium products curated just for you.
+        </p>
         <Link
           to="/products"
-          className="inline-block bg-accent text-secondary px-8 py-3 rounded-lg font-semibold hover:opacity-90 transition"
+          className="inline-block bg-background text-foreground px-8 py-3 rounded-lg font-semibold hover:opacity-90 transition"
         >
           Explore Products
         </Link>
       </section>
     </div>
-  )
+  );
 }

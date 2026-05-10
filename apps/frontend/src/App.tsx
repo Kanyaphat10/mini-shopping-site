@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { useAuthStore } from './store/authStore'
 import Header from './components/Header'
 import Footer from './components/Footer'
+import { ThemeProvider } from "./components/ThemeProvider"
 
 // Pages
 import HomePage from './pages/HomePage'
@@ -44,70 +45,72 @@ function App() {
   }, [])
 
   return (
-    <Router>
-      <div className="flex flex-col min-h-screen bg-background">
-        <Header />
-        <main className="flex-1 container mx-auto px-4 py-8">
-          <Routes>
-            {/* Public routes */}
-            <Route path="/" element={<HomePage />} />
-            <Route path="/products" element={<ProductsPage />} />
-            <Route path="/products/:id" element={<ProductDetailPage />} />
-            
-            {/* Auth routes */}
-            <Route 
-              path="/login" 
-              element={user ? <Navigate to="/" /> : <LoginPage />} 
-            />
-            <Route 
-              path="/staff/login" 
-              element={user ? <Navigate to="/" /> : <StaffLoginPage />} 
-            />
-            <Route 
-              path="/register" 
-              element={user ? <Navigate to="/" /> : <RegisterPage />} 
-            />
-            <Route 
-              path="/auth/success" 
-              element={<AuthSuccessPage />} 
-            />
+    <ThemeProvider>
+      <Router>
+        <div className="flex flex-col min-h-screen bg-background">
+          <Header />
+          <main className="flex-1 container mx-auto px-4 py-8">
+            <Routes>
+              {/* Public routes */}
+              <Route path="/" element={<HomePage />} />
+              <Route path="/products" element={<ProductsPage />} />
+              <Route path="/products/:id" element={<ProductDetailPage />} />
 
-            {/* Protected customer routes */}
-            {user?.role === 'CUSTOMER' && (
-              <>
-                <Route path="/cart" element={<CartPage />} />
-                <Route path="/checkout" element={<CheckoutPage />} />
-                <Route path="/orders" element={<OrdersPage />} />
-              </>
-            )}
+              {/* Auth routes */}
+              <Route
+                path="/login"
+                element={user ? <Navigate to="/" /> : <LoginPage />}
+              />
+              <Route
+                path="/staff/login"
+                element={user ? <Navigate to="/" /> : <StaffLoginPage />}
+              />
+              <Route
+                path="/register"
+                element={user ? <Navigate to="/" /> : <RegisterPage />}
+              />
+              <Route
+                path="/auth/success"
+                element={<AuthSuccessPage />}
+              />
 
-            {/* Protected courier routes */}
-            {user?.role === 'COURIER' && (
-              <Route path="/courier" element={<CourierDashboard />} />
-            )}
+              {/* Protected customer routes */}
+              {user?.role === 'CUSTOMER' && (
+                <>
+                  <Route path="/cart" element={<CartPage />} />
+                  <Route path="/checkout" element={<CheckoutPage />} />
+                  <Route path="/orders" element={<OrdersPage />} />
+                </>
+              )}
 
-            {/* Protected service agent routes */}
-            {user?.role === 'SERVICE_AGENT' && (
-              <Route path="/service" element={<ServiceDashboard />} />
-            )}
+              {/* Protected courier routes */}
+              {user?.role === 'COURIER' && (
+                <Route path="/courier" element={<CourierDashboard />} />
+              )}
 
-            {/* Protected profile route for all users */}
-            {user && (
-              <Route path="/profile" element={<ProfilePage />} />
-            )}
+              {/* Protected service agent routes */}
+              {user?.role === 'SERVICE_AGENT' && (
+                <Route path="/service" element={<ServiceDashboard />} />
+              )}
 
-            {/* Protected admin routes */}
-            {user?.role === 'ADMIN' && (
-              <Route path="/admin" element={<AdminDashboard />} />
-            )}
+              {/* Protected profile route for all users */}
+              {user && (
+                <Route path="/profile" element={<ProfilePage />} />
+              )}
 
-            {/* Catch all */}
-            <Route path="*" element={<Navigate to="/" />} />
-          </Routes>
-        </main>
-        <Footer />
-      </div>
-    </Router>
+              {/* Protected admin routes */}
+              {user?.role === 'ADMIN' && (
+                <Route path="/admin" element={<AdminDashboard />} />
+              )}
+
+              {/* Catch all */}
+              <Route path="*" element={<Navigate to="/" />} />
+            </Routes>
+          </main>
+          <Footer />
+        </div>
+      </Router>
+    </ThemeProvider>
   )
 }
 

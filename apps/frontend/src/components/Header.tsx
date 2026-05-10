@@ -4,8 +4,11 @@ import { useCartStore } from '../store/cartStore'
 import { ShoppingCart, LogOut, Menu } from 'lucide-react'
 import { useState } from 'react'
 import { authService } from '../services/api'
+import { Sun, Moon } from "lucide-react"
+import { useTheme } from "./ThemeProvider"
 
 export default function Header() {
+  const { theme, toggleTheme } = useTheme()
   const { user, logout } = useAuthStore()
   const { items } = useCartStore()
   const navigate = useNavigate()
@@ -31,16 +34,32 @@ export default function Header() {
 
           {/* Desktop navigation */}
           <nav className="hidden md:flex gap-6 items-center">
-            <Link to="/products" className="text-foreground hover:text-primary transition">
+            <Link
+              to="/products"
+              className="text-foreground hover:text-primary transition"
+            >
               Products
             </Link>
-            
+            {/* Dark mode toggle — Mobile */}
+            <button
+              onClick={toggleTheme}
+              className="flex items-center gap-2 text-foreground hover:text-primary transition"
+            >
+              {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+              {theme === "dark" ? "Light Mode" : "Dark Mode"}
+            </button>
             {!user && (
               <>
-                <Link to="/login" className="text-foreground hover:text-primary transition">
+                <Link
+                  to="/login"
+                  className="text-foreground hover:text-primary transition"
+                >
                   Login
                 </Link>
-                <Link to="/register" className="bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:opacity-90 transition">
+                <Link
+                  to="/register"
+                  className="bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:opacity-90 transition"
+                >
                   Register
                 </Link>
               </>
@@ -48,46 +67,77 @@ export default function Header() {
 
             {user && (
               <>
-                {user.role === 'CUSTOMER' && (
+                {user.role === "CUSTOMER" && (
                   <>
-                    <Link to="/cart" className="flex items-center gap-2 hover:text-primary transition">
+                    <Link
+                      to="/cart"
+                      className="flex items-center gap-2 hover:text-primary transition"
+                    >
                       <ShoppingCart size={20} />
                       <span>{items.length}</span>
                     </Link>
-                    <Link to="/orders" className="text-foreground hover:text-primary transition">
+                    <Link
+                      to="/orders"
+                      className="text-foreground hover:text-primary transition"
+                    >
                       Orders
                     </Link>
                   </>
                 )}
 
-                {user.role === 'COURIER' && (
-                  <Link to="/courier" className="text-foreground hover:text-primary transition">
+                {user.role === "COURIER" && (
+                  <Link
+                    to="/courier"
+                    className="text-foreground hover:text-primary transition"
+                  >
                     Dashboard
                   </Link>
                 )}
 
-                {user.role === 'ADMIN' && (
-                  <Link to="/admin" className="text-foreground hover:text-primary transition">
+                {user.role === "ADMIN" && (
+                  <Link
+                    to="/admin"
+                    className="text-foreground hover:text-primary transition"
+                  >
                     Admin
                   </Link>
                 )}
 
-                {user.role === 'SERVICE_AGENT' && (
-                  <Link to="/service" className="text-foreground hover:text-primary transition">
+                {user.role === "SERVICE_AGENT" && (
+                  <Link
+                    to="/service"
+                    className="text-foreground hover:text-primary transition"
+                  >
                     Dashboard
                   </Link>
                 )}
 
-                <Link to="/profile" className="text-foreground hover:text-primary transition">
+                <Link
+                  to="/profile"
+                  className="text-foreground hover:text-primary transition"
+                >
                   Profile
                 </Link>
 
                 <div className="flex items-center gap-4 pl-4 border-l border-border">
-                  <span className="text-sm text-muted-foreground">{user.name}</span>
+                  <span className="text-sm text-muted-foreground">
+                    {user.name}
+                  </span>
                   <button
                     onClick={handleLogout}
                     className="flex items-center gap-2 text-destructive hover:opacity-80 transition"
                   >
+                    {/* Dark mode toggle — Desktop */}
+                    <button
+                      onClick={toggleTheme}
+                      className="text-foreground hover:text-primary transition"
+                    >
+                      {theme === "dark" ? (
+                        <Sun size={20} />
+                      ) : (
+                        <Moon size={20} />
+                      )}
+                    </button>
                     <LogOut size={20} />
                   </button>
                 </div>
@@ -107,16 +157,32 @@ export default function Header() {
         {/* Mobile navigation */}
         {mobileMenuOpen && (
           <nav className="md:hidden mt-4 flex flex-col gap-4 border-t border-border pt-4">
-            <Link to="/products" className="text-foreground hover:text-primary transition">
+            <Link
+              to="/products"
+              className="text-foreground hover:text-primary transition"
+            >
               Products
             </Link>
-            
+            {/* Dark mode toggle — Mobile */}
+            <button
+              onClick={toggleTheme}
+              className="flex items-center gap-2 text-foreground hover:text-primary transition"
+            >
+              {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+              {theme === "dark" ? "Light Mode" : "Dark Mode"}
+            </button>
             {!user && (
               <>
-                <Link to="/login" className="text-foreground hover:text-primary transition">
+                <Link
+                  to="/login"
+                  className="text-foreground hover:text-primary transition"
+                >
                   Login
                 </Link>
-                <Link to="/register" className="bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:opacity-90 transition text-center">
+                <Link
+                  to="/register"
+                  className="bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:opacity-90 transition text-center"
+                >
                   Register
                 </Link>
               </>
@@ -124,37 +190,55 @@ export default function Header() {
 
             {user && (
               <>
-                {user.role === 'CUSTOMER' && (
+                {user.role === "CUSTOMER" && (
                   <>
-                    <Link to="/cart" className="flex items-center gap-2 hover:text-primary transition">
+                    <Link
+                      to="/cart"
+                      className="flex items-center gap-2 hover:text-primary transition"
+                    >
                       <ShoppingCart size={20} />
                       <span>Cart ({items.length})</span>
                     </Link>
-                    <Link to="/orders" className="text-foreground hover:text-primary transition">
+                    <Link
+                      to="/orders"
+                      className="text-foreground hover:text-primary transition"
+                    >
                       Orders
                     </Link>
                   </>
                 )}
 
-                {user.role === 'COURIER' && (
-                  <Link to="/courier" className="text-foreground hover:text-primary transition">
+                {user.role === "COURIER" && (
+                  <Link
+                    to="/courier"
+                    className="text-foreground hover:text-primary transition"
+                  >
                     Dashboard
                   </Link>
                 )}
 
-                {user.role === 'ADMIN' && (
-                  <Link to="/admin" className="text-foreground hover:text-primary transition">
+                {user.role === "ADMIN" && (
+                  <Link
+                    to="/admin"
+                    className="text-foreground hover:text-primary transition"
+                  >
                     Admin
                   </Link>
                 )}
 
-                {user.role === 'SERVICE_AGENT' && (
-                  <Link to="/service" className="text-foreground hover:text-primary transition">
+                {user.role === "SERVICE_AGENT" && (
+                  <Link
+                    to="/service"
+                    className="text-foreground hover:text-primary transition"
+                  >
                     Dashboard
                   </Link>
                 )}
 
-                <Link to="/profile" className="text-foreground hover:text-primary transition">
+                <Link
+                  to="/profile"
+                  className="text-foreground hover:text-primary transition"
+                >
                   Profile
                 </Link>
 
@@ -171,5 +255,5 @@ export default function Header() {
         )}
       </div>
     </header>
-  )
+  );
 }
