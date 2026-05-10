@@ -72,6 +72,16 @@ export default function Header() {
                   </Link>
                 )}
 
+                {user.role === 'SERVICE_AGENT' && (
+                  <Link to="/service" className="text-foreground hover:text-primary transition">
+                    Dashboard
+                  </Link>
+                )}
+
+                <Link to="/profile" className="text-foreground hover:text-primary transition">
+                  Profile
+                </Link>
+
                 <div className="flex items-center gap-4 pl-4 border-l border-border">
                   <span className="text-sm text-muted-foreground">{user.name}</span>
                   <button
@@ -137,6 +147,16 @@ export default function Header() {
                     Admin
                   </Link>
                 )}
+
+                {user.role === 'SERVICE_AGENT' && (
+                  <Link to="/service" className="text-foreground hover:text-primary transition">
+                    Dashboard
+                  </Link>
+                )}
+
+                <Link to="/profile" className="text-foreground hover:text-primary transition">
+                  Profile
+                </Link>
 
                 <button
                   onClick={handleLogout}

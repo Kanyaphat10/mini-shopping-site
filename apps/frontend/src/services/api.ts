@@ -76,4 +76,12 @@ export const adminService = {
   seedDatabase: () => apiClient.post('/admin/seed'),
 }
 
+export const userService = {
+  getAll: () => apiClient.get('/users'),
+  getById: (id: string) => apiClient.get(`/users/${id}`),
+  getUserOrders: (id: string) => apiClient.get(`/users/${id}/orders`),
+  update: (id: string, data: any) => apiClient.put(`/users/${id}`, data),
+  updateMe: (data: any) => apiClient.put('/users/me', data),
+}
+
 export default apiClient

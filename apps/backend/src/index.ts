@@ -7,6 +7,7 @@ import { cartRoutes } from './routes/cart'
 import { orderRoutes } from './routes/orders'
 import { shipmentRoutes } from './routes/shipments'
 import { adminRoutes } from './routes/admin'
+import { usersRoutes } from './routes/users'
 
 const prisma = new PrismaClient()
 
@@ -23,6 +24,7 @@ const app = new Elysia({ prefix: '/api' })
   .use(orderRoutes)
   .use(shipmentRoutes)
   .use(adminRoutes)
+  .use(usersRoutes)
   .get('/', () => ({ message: 'Mini Shopping Site API' }))
   .listen(process.env.PORT || 3001)
 
