@@ -104,7 +104,9 @@ describe('Checkout and Cart Flow', () => {
     );
     expect(response.status).toBe(200); // Elysia handles this cleanly
     const data: any = await response.json();
-    expect(data.error).toContain('does not have enough quantity');
+    expect(data.error).toBe('INSUFFICIENT_STOCK');
+    expect(data.details).toBeDefined();
+    expect(data.details.length).toBeGreaterThan(0);
   });
 
   it('should succeed checkout with valid stock and clear cart', async () => {
