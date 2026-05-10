@@ -66,6 +66,19 @@ export const shipmentRoutes = new Elysia({ prefix: '/shipments' })
           include: { order: true, courier: true },
         })
 
+        // Sync order status
+        let orderStatus;
+        if (body.status === 'DELIVERED') orderStatus = 'DELIVERED';
+        else if (['PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY'].includes(body.status)) orderStatus = 'SHIPPED';
+
+        if (orderStatus) {
+          await prisma.order.update({
+            where: { id: shipment.orderId },
+            data: { status: orderStatus }
+          });
+          shipment.order.status = orderStatus; // update the returned object
+        }
+
         return shipment
       } catch (error: any) {
         return { error: error.message }
