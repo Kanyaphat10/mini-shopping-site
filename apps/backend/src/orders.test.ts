@@ -109,7 +109,7 @@ describe('Checkout and Cart Flow', () => {
     expect(data.details.length).toBeGreaterThan(0);
   });
 
-  it('should succeed checkout with valid stock and clear cart', async () => {
+  it('should succeed checkout with valid stock and clear cart after settlement', async () => {
     // Reduce quantity back to 2 (which is the stock)
     const cartRes = await app.handle(
       new Request('http://localhost/cart/', {
@@ -151,14 +151,35 @@ describe('Checkout and Cart Flow', () => {
     const product = await prisma.product.findUnique({ where: { id: testProductId } });
     expect(product?.stock).toBe(0);
 
-    // Verify cart is cleared
-    const cartVerify = await app.handle(
+    // Verify cart is NOT cleared yet (as per new settlement logic)
+    const cartBeforeVerify = await app.handle(
       new Request('http://localhost/cart/', {
         method: 'GET',
         headers: { Authorization: `Bearer ${token}` },
       })
     );
-    const cartData: any = await cartVerify.json();
+    expect((await cartBeforeVerify.json()).items.length).toBe(1);
+
+    // Settle the order to clear the cart
+    await app.handle(
+      new Request(`http://localhost/orders/${data.id}/status`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status: 'SETTLED' }),
+      })
+    );
+
+    // Verify cart is cleared
+    const cartAfterVerify = await app.handle(
+      new Request('http://localhost/cart/', {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${token}` },
+      })
+    );
+    const cartData: any = await cartAfterVerify.json();
     expect(cartData.items.length).toBe(0);
   });
 });
