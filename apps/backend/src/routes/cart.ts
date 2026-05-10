@@ -86,6 +86,7 @@ export const cartRoutes = new Elysia({ prefix: '/cart' })
       } catch (error: any) {
         return { error: error.message }
       }
+    }
   )
   .put(
     '/item/:itemId',
