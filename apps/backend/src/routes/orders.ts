@@ -4,7 +4,7 @@ import { CreateOrderSchema } from '../utils/schemas'
 import { verifyToken } from '../utils/auth'
 
 export const orderRoutes = new Elysia({ prefix: '/orders' })
-  .get('/', async ({ headers, prisma }: { headers: any; prisma: PrismaClient }) => {
+  .get('/', async ({ headers, prisma }: any) => {
     try {
       const token = headers['authorization']?.replace('Bearer ', '')
       if (!token) return { error: 'Unauthorized' }
@@ -27,7 +27,7 @@ export const orderRoutes = new Elysia({ prefix: '/orders' })
       return { error: error.message }
     }
   })
-  .get('/:id', async ({ params: { id }, headers, prisma }: { params: any; headers: any; prisma: PrismaClient }) => {
+  .get('/:id', async ({ params: { id }, headers, prisma }: any) => {
     try {
       const token = headers['authorization']?.replace('Bearer ', '')
       if (!token) return { error: 'Unauthorized' }
@@ -48,7 +48,7 @@ export const orderRoutes = new Elysia({ prefix: '/orders' })
   })
   .post(
     '/create',
-    async ({ body, headers, prisma }: { body: any; headers: any; prisma: PrismaClient }) => {
+    async ({ body, headers, prisma }: any) => {
       try {
         const token = headers['authorization']?.replace('Bearer ', '')
         if (!token) return { error: 'Unauthorized' }
@@ -129,7 +129,7 @@ export const orderRoutes = new Elysia({ prefix: '/orders' })
   )
   .put(
     '/:id/status',
-    async ({ params: { id }, body, prisma }: { params: any; body: any; prisma: PrismaClient }) => {
+    async ({ params: { id }, body, prisma }: any) => {
       try {
         const order = await prisma.order.update({
           where: { id },

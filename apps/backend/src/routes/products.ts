@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client'
 import { getCurrentUser } from '../utils/auth'
 
 export const productRoutes = new Elysia({ prefix: '/products' })
-  .get('/', async ({ headers, prisma }: { headers: any; prisma: PrismaClient }) => {
+  .get('/', async ({ headers, prisma }: any) => {
     try {
       const authHeader = headers['authorization']
       const token = authHeader?.replace('Bearer ', '')
@@ -29,7 +29,7 @@ export const productRoutes = new Elysia({ prefix: '/products' })
       return { error: error.message }
     }
   })
-  .get('/:id', async ({ params: { id }, headers, prisma, set }: { params: any; headers: any; prisma: PrismaClient; set: any }) => {
+  .get('/:id', async ({ params: { id }, headers, prisma, set }: any) => {
     try {
       const authHeader = headers['authorization']
       const token = authHeader?.replace('Bearer ', '')
@@ -53,7 +53,7 @@ export const productRoutes = new Elysia({ prefix: '/products' })
   })
   .post(
     '/',
-    async ({ headers, body, prisma, set }: { headers: any; body: any; prisma: PrismaClient; set: any }) => {
+    async ({ headers, body, prisma, set }: any) => {
       try {
         const authHeader = headers['authorization']
         const token = authHeader?.replace('Bearer ', '')
@@ -90,7 +90,7 @@ export const productRoutes = new Elysia({ prefix: '/products' })
   )
   .put(
     '/:id',
-    async ({ params: { id }, headers, body, prisma, set }: { params: any; headers: any; body: any; prisma: PrismaClient; set: any }) => {
+    async ({ params: { id }, headers, body, prisma, set }: any) => {
       try {
         const authHeader = headers['authorization']
         const token = authHeader?.replace('Bearer ', '')
@@ -123,7 +123,7 @@ export const productRoutes = new Elysia({ prefix: '/products' })
       })),
     }
   )
-  .delete('/:id', async ({ params: { id }, headers, prisma, set }: { params: any; headers: any; prisma: PrismaClient; set: any }) => {
+  .delete('/:id', async ({ params: { id }, headers, prisma, set }: any) => {
     try {
       const authHeader = headers['authorization']
       const token = authHeader?.replace('Bearer ', '')

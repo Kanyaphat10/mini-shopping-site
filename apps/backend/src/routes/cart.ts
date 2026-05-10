@@ -4,7 +4,7 @@ import { AddToCartSchema } from '../utils/schemas'
 import { verifyToken } from '../utils/auth'
 
 export const cartRoutes = new Elysia({ prefix: '/cart' })
-  .get('/', async ({ headers, prisma }: { headers: any; prisma: PrismaClient }) => {
+  .get('/', async ({ headers, prisma }: any) => {
     try {
       const token = headers['authorization']?.replace('Bearer ', '')
       if (!token) return { error: 'Unauthorized' }
@@ -31,7 +31,7 @@ export const cartRoutes = new Elysia({ prefix: '/cart' })
   })
   .post(
     '/add',
-    async ({ body, headers, prisma }: { body: any; headers: any; prisma: PrismaClient }) => {
+    async ({ body, headers, prisma }: any) => {
       try {
         const token = headers['authorization']?.replace('Bearer ', '')
         if (!token) return { error: 'Unauthorized' }
@@ -77,7 +77,7 @@ export const cartRoutes = new Elysia({ prefix: '/cart' })
   )
   .delete(
     '/item/:itemId',
-    async ({ params: { itemId }, prisma }: { params: any; prisma: PrismaClient }) => {
+    async ({ params: { itemId }, prisma }: any) => {
       try {
         await prisma.cartItem.delete({
           where: { id: itemId },
@@ -90,7 +90,7 @@ export const cartRoutes = new Elysia({ prefix: '/cart' })
   )
   .put(
     '/item/:itemId',
-    async ({ params: { itemId }, body, prisma }: { params: any; body: any; prisma: PrismaClient }) => {
+    async ({ params: { itemId }, body, prisma }: any) => {
       try {
         const item = await prisma.cartItem.update({
           where: { id: itemId },
@@ -109,7 +109,7 @@ export const cartRoutes = new Elysia({ prefix: '/cart' })
   )
   .post(
     '/clear',
-    async ({ headers, prisma }: { headers: any; prisma: PrismaClient }) => {
+    async ({ headers, prisma }: any) => {
       try {
         const token = headers['authorization']?.replace('Bearer ', '')
         if (!token) return { error: 'Unauthorized' }
