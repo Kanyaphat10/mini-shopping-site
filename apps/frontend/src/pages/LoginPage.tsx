@@ -33,10 +33,15 @@ export default function LoginPage() {
 
     try {
       const response = await authService.login(data.email, data.password)
+      if (response.data && response.data.error) {
+        setError(response.data.message || response.data.error)
+        setLoading(false)
+        return
+      }
       login(response.data.user, response.data.token, response.data.sessionToken)
       navigate('/')
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Login failed')
+      setError(err.response?.data?.message || err.response?.data?.error || 'Login failed')
     } finally {
       setLoading(false)
     }
