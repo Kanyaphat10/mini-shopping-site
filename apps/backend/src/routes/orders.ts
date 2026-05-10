@@ -4,7 +4,7 @@ import { CreateOrderSchema } from '../utils/schemas'
 import { verifyToken } from '../utils/auth'
 
 export const orderRoutes = new Elysia({ prefix: '/orders' })
-  .get('/', async ({ headers, prisma }: { headers: any; prisma: PrismaClient }) => {
+  .get('/', async ({ headers, prisma }: any) => {
     try {
       const token = headers['authorization']?.replace('Bearer ', '')
       if (!token) return { error: 'Unauthorized' }
@@ -27,7 +27,7 @@ export const orderRoutes = new Elysia({ prefix: '/orders' })
       return { error: error.message }
     }
   })
-  .get('/:id', async ({ params: { id }, headers, prisma }: { params: any; headers: any; prisma: PrismaClient }) => {
+  .get('/:id', async ({ params: { id }, headers, prisma }: any) => {
     try {
       const token = headers['authorization']?.replace('Bearer ', '')
       if (!token) return { error: 'Unauthorized' }
@@ -48,7 +48,7 @@ export const orderRoutes = new Elysia({ prefix: '/orders' })
   })
   .post(
     '/create',
-    async ({ body, headers, prisma }: { body: any; headers: any; prisma: PrismaClient }) => {
+    async ({ body, headers, prisma }: any) => {
       try {
         const token = headers['authorization']?.replace('Bearer ', '')
         if (!token) return { error: 'Unauthorized' }
@@ -67,33 +67,53 @@ export const orderRoutes = new Elysia({ prefix: '/orders' })
           return { error: 'Cart is empty' }
         }
 
+        // Validate stock
+        for (const item of cart.items) {
+          if (item.product.stock < item.quantity) {
+            return { error: `Product ${item.product.name} is out of stock or does not have enough quantity` }
+          }
+        }
+
         const totalPrice = cart.items.reduce((sum: number, item: any) => 
           sum + (Number(item.product.price) * item.quantity), 0
         )
 
-        const order = await prisma.order.create({
-          data: {
-            userId,
-            shippingAddr: validated.shippingAddr,
-            totalPrice: totalPrice.toString(),
-            items: {
-              create: cart.items.map((item: any) => ({
-                productId: item.productId,
-                quantity: item.quantity,
-                price: item.product.price,
-              })),
-            },
-            payment: {
-              create: {
-                amount: totalPrice.toString(),
+        // Use transaction to ensure consistency
+        const order = await prisma.$transaction(async (tx: any) => {
+          // Decrement stock
+          for (const item of cart.items) {
+            await tx.product.update({
+              where: { id: item.productId },
+              data: { stock: { decrement: item.quantity } },
+            })
+          }
+
+          const createdOrder = await tx.order.create({
+            data: {
+              userId,
+              shippingAddr: validated.shippingAddr,
+              totalPrice: totalPrice.toString(),
+              items: {
+                create: cart.items.map((item: any) => ({
+                  productId: item.productId,
+                  quantity: item.quantity,
+                  price: item.product.price,
+                })),
+              },
+              payment: {
+                create: {
+                  amount: totalPrice.toString(),
+                },
               },
             },
-          },
-          include: { items: true, payment: true },
-        })
+            include: { items: true, payment: true },
+          })
 
-        await prisma.cartItem.deleteMany({
-          where: { cartId: cart.id },
+          await tx.cartItem.deleteMany({
+            where: { cartId: cart.id },
+          })
+
+          return createdOrder
         })
 
         return order
@@ -109,7 +129,7 @@ export const orderRoutes = new Elysia({ prefix: '/orders' })
   )
   .put(
     '/:id/status',
-    async ({ params: { id }, body, prisma }: { params: any; body: any; prisma: PrismaClient }) => {
+    async ({ params: { id }, body, prisma }: any) => {
       try {
         const order = await prisma.order.update({
           where: { id },
@@ -122,7 +142,7 @@ export const orderRoutes = new Elysia({ prefix: '/orders' })
     },
     {
       body: t.Object({
-        status: t.Enum(['PENDING', 'CONFIRMED', 'SHIPPED', 'DELIVERED', 'CANCELLED']),
+        status: t.Union([t.Literal('PENDING'), t.Literal('CONFIRMED'), t.Literal('SHIPPED'), t.Literal('DELIVERED'), t.Literal('CANCELLED')]),
       }),
     }
   )

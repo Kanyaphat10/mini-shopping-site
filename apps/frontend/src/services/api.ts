@@ -44,6 +44,8 @@ export const cartService = {
   get: () => apiClient.get('/cart'),
   addItem: (productId: string, quantity: number) =>
     apiClient.post('/cart/add', { productId, quantity }),
+  updateQuantity: (itemId: string, quantity: number) =>
+    apiClient.put(`/cart/item/${itemId}`, { quantity }),
   removeItem: (itemId: string) => apiClient.delete(`/cart/item/${itemId}`),
   clear: () => apiClient.post('/cart/clear'),
 }

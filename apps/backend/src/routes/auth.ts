@@ -15,7 +15,7 @@ export const authRoutes = new Elysia({ prefix: '/auth' })
   // Email/Password Registration
   .post(
     '/register',
-    async ({ body, prisma }: { body: any; prisma: PrismaClient }) => {
+    async ({ body, prisma }: any) => {
       try {
         const validated = RegisterSchema.parse(body)
 
@@ -61,7 +61,7 @@ export const authRoutes = new Elysia({ prefix: '/auth' })
   // Email/Password Login
   .post(
     '/login',
-    async ({ body, prisma }: { body: any; prisma: PrismaClient }) => {
+    async ({ body, prisma }: any) => {
       try {
         const validated = LoginSchema.parse(body)
 
@@ -104,7 +104,7 @@ export const authRoutes = new Elysia({ prefix: '/auth' })
   )
 
   // Get Current User from JWT
-  .get('/me', async ({ headers, prisma }: { headers: any; prisma: PrismaClient }) => {
+  .get('/me', async ({ headers, prisma }: any) => {
     try {
       const authHeader = headers['authorization']
       const token = authHeader?.replace('Bearer ', '')
@@ -141,7 +141,7 @@ export const authRoutes = new Elysia({ prefix: '/auth' })
   // Logout (revoke session)
   .post(
     '/logout',
-    async ({ headers, prisma }: { headers: any; prisma: PrismaClient }) => {
+    async ({ headers, prisma }: any) => {
       try {
         const sessionToken = headers['x-session-token']
 
@@ -167,7 +167,7 @@ export const authRoutes = new Elysia({ prefix: '/auth' })
   // Google OAuth Callback (Real Flow)
   .get(
     '/google/callback',
-    async ({ query, prisma, set, redirect }: { query: any; prisma: PrismaClient; set: any; redirect: any }) => {
+    async ({ query, prisma, set, redirect }: any) => {
       try {
         const { code } = query
         if (!code) {
@@ -262,7 +262,7 @@ export const authRoutes = new Elysia({ prefix: '/auth' })
   // Validate Session
   .get(
     '/session/validate',
-    async ({ headers, prisma }: { headers: any; prisma: PrismaClient }) => {
+    async ({ headers, prisma }: any) => {
       try {
         const sessionToken = headers['x-session-token']
 

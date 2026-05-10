@@ -44,7 +44,12 @@ export default function CartPage() {
 
   const handleUpdateQuantity = async (itemId: string, newQuantity: number) => {
     if (newQuantity < 1) return
-    updateQuantity(itemId, newQuantity)
+    try {
+      await cartService.updateQuantity(itemId, newQuantity)
+      updateQuantity(itemId, newQuantity)
+    } catch (error) {
+      console.error('Error updating quantity:', error)
+    }
   }
 
   if (loading) {
