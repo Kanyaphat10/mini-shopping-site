@@ -44,11 +44,16 @@ export default function CheckoutPage() {
     setLoading(true)
 
     try {
-      await orderService.create(data.shippingAddr)
+      const response = await orderService.create(data.shippingAddr)
+      if (response.data && response.data.error) {
+        setError(response.data.error)
+        setLoading(false)
+        return
+      }
       clear()
       navigate('/orders')
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Order creation failed')
+      setError(err.response?.data?.message || err.response?.data?.error || 'Order creation failed')
     } finally {
       setLoading(false)
     }
