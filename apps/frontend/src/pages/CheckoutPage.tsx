@@ -56,6 +56,7 @@ export default function CheckoutPage() {
         setLoading(false)
         return
       }
+      clear()
       navigate('/orders')
     } catch (err: any) {
       setError(err.response?.data?.message || err.response?.data?.error || 'Order creation failed')

@@ -137,9 +137,11 @@ export const orderRoutes = new Elysia({ prefix: '/orders' })
             include: { items: true, payment: true },
           })
 
-          // Note: Cart clearing is now handled during order settlement (status = SETTLED)
-          // in the status update route.
-          
+          // Note: Cart clearing will be moved to settlement in Feature 4
+          await tx.cartItem.deleteMany({
+            where: { cartId: cart.id },
+          })
+
           return createdOrder
         })
 
@@ -164,40 +166,18 @@ export const orderRoutes = new Elysia({ prefix: '/orders' })
     '/:id/status',
     async ({ params: { id }, body, prisma }: any) => {
       try {
-        const result = await prisma.$transaction(async (tx: any) => {
-          const order = await tx.order.update({
-            where: { id },
-            data: { status: body.status },
-          })
-
-          // Clear cart only if order is SETTLED
-          if (body.status === 'SETTLED') {
-            const cart = await tx.cart.findUnique({
-              where: { userId: order.userId }
-            })
-            if (cart) {
-              await tx.cartItem.deleteMany({
-                where: { cartId: cart.id }
-              })
-            }
-          }
-          return order
+        const order = await prisma.order.update({
+          where: { id },
+          data: { status: body.status },
         })
-        return result
+        return order
       } catch (error: any) {
         return { error: error.message }
       }
     },
     {
       body: t.Object({
-        status: t.Union([
-          t.Literal('PENDING'), 
-          t.Literal('CONFIRMED'), 
-          t.Literal('SHIPPED'), 
-          t.Literal('DELIVERED'), 
-          t.Literal('CANCELLED'),
-          t.Literal('SETTLED')
-        ]),
+        status: t.Union([t.Literal('PENDING'), t.Literal('CONFIRMED'), t.Literal('SHIPPED'), t.Literal('DELIVERED'), t.Literal('CANCELLED')]),
       }),
     }
   )
