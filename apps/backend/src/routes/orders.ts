@@ -67,19 +67,47 @@ export const orderRoutes = new Elysia({ prefix: '/orders' })
           return { error: 'Cart is empty' }
         }
 
-        // Validate stock
-        for (const item of cart.items) {
-          if (item.product.stock < item.quantity) {
-            return { error: `Product ${item.product.name} is out of stock or does not have enough quantity` }
+        // Use transaction to ensure consistency and prevent race conditions
+        const result = await prisma.$transaction(async (tx: any) => {
+          // Re-fetch cart and items inside the transaction to get fresh product data
+          const cart = await tx.cart.findUnique({
+            where: { userId },
+            include: { items: { include: { product: true } } },
+          })
+
+          if (!cart || cart.items.length === 0) {
+            return { error: 'Cart is empty' }
           }
-        }
 
-        const totalPrice = cart.items.reduce((sum: number, item: any) => 
-          sum + (Number(item.product.price) * item.quantity), 0
-        )
+          const insufficientStock: any[] = []
+          
+          // Re-validate stock for each item inside the transaction with FOR UPDATE locking
+          for (const item of cart.items) {
+            // Locking the row to prevent other transactions from reading it until we are done
+            const freshProducts: any[] = await tx.$queryRaw`SELECT stock FROM "Product" WHERE id = ${item.productId} FOR UPDATE`
+            const freshProduct = freshProducts[0]
 
-        // Use transaction to ensure consistency
-        const order = await prisma.$transaction(async (tx: any) => {
+            if (!freshProduct || freshProduct.stock < item.quantity) {
+              insufficientStock.push({
+                id: item.productId,
+                name: item.product.name,
+                requested: item.quantity,
+                available: freshProduct?.stock ?? 0,
+              })
+            }
+          }
+
+          if (insufficientStock.length > 0) {
+            // Throwing error inside transaction to force rollback
+            const error: any = new Error('INSUFFICIENT_STOCK')
+            error.details = insufficientStock
+            throw error
+          }
+
+          const totalPrice = cart.items.reduce((sum: number, item: any) => 
+            sum + (Number(item.product.price) * item.quantity), 0
+          )
+
           // Decrement stock
           for (const item of cart.items) {
             await tx.product.update({
@@ -109,6 +137,7 @@ export const orderRoutes = new Elysia({ prefix: '/orders' })
             include: { items: true, payment: true },
           })
 
+          // Note: Cart clearing will be moved to settlement in Feature 4
           await tx.cartItem.deleteMany({
             where: { cartId: cart.id },
           })
@@ -116,8 +145,14 @@ export const orderRoutes = new Elysia({ prefix: '/orders' })
           return createdOrder
         })
 
-        return order
+        return result
       } catch (error: any) {
+        if (error.message === 'INSUFFICIENT_STOCK') {
+          return { 
+            error: 'INSUFFICIENT_STOCK', 
+            details: error.details 
+          }
+        }
         return { error: error.message }
       }
     },

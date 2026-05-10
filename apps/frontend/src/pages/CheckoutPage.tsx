@@ -19,6 +19,7 @@ export default function CheckoutPage() {
   const { items, getTotalPrice, clear } = useCartStore()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [stockErrors, setStockErrors] = useState<any[]>([])
   const {
     register,
     handleSubmit,
@@ -46,7 +47,12 @@ export default function CheckoutPage() {
     try {
       const response = await orderService.create(data.shippingAddr)
       if (response.data && response.data.error) {
-        setError(response.data.error)
+        if (response.data.error === 'INSUFFICIENT_STOCK') {
+          setStockErrors(response.data.details)
+          setError('Inventory validation failed. Please check the items below.')
+        } else {
+          setError(response.data.error)
+        }
         setLoading(false)
         return
       }
@@ -71,6 +77,26 @@ export default function CheckoutPage() {
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
               {error}
+            </div>
+          )}
+
+          {stockErrors.length > 0 && (
+            <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-lg mb-6">
+              <h3 className="font-bold mb-2">Stock Availability Issues:</h3>
+              <ul className="list-disc list-inside text-sm space-y-1 mb-3">
+                {stockErrors.map((item: any) => (
+                  <li key={item.id}>
+                    <strong>{item.name}</strong>: Requested {item.requested}, but only {item.available} in stock.
+                  </li>
+                ))}
+              </ul>
+              <button 
+                type="button"
+                onClick={() => navigate('/cart')}
+                className="text-sm font-bold underline hover:opacity-80"
+              >
+                Go to Cart to Adjust Quantities
+              </button>
             </div>
           )}
 
