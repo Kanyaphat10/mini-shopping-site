@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client'
 import { hashPassword } from '../utils/auth';
 
 export const adminRoutes = new Elysia({ prefix: '/admin' })
-  .get('/users', async ({ headers, prisma }: { headers: any; prisma: PrismaClient }) => {
+  .get('/users', async ({ headers, prisma }: any) => {
     try {
       const token = headers['authorization']?.replace('Bearer ', '')
       if (!token) return { error: 'Unauthorized' }
@@ -17,7 +17,7 @@ export const adminRoutes = new Elysia({ prefix: '/admin' })
       return { error: error.message }
     }
   })
-  .get('/orders', async ({ headers, prisma }: { headers: any; prisma: PrismaClient }) => {
+  .get('/orders', async ({ headers, prisma }: any) => {
     try {
       const token = headers['authorization']?.replace('Bearer ', '')
       if (!token) return { error: 'Unauthorized' }
@@ -35,7 +35,7 @@ export const adminRoutes = new Elysia({ prefix: '/admin' })
       return { error: error.message }
     }
   })
-  .get('/stats', async ({ headers, prisma }: { headers: any; prisma: PrismaClient }) => {
+  .get('/stats', async ({ headers, prisma }: any) => {
     try {
       const token = headers['authorization']?.replace('Bearer ', '')
       if (!token) return { error: 'Unauthorized' }
@@ -60,7 +60,7 @@ export const adminRoutes = new Elysia({ prefix: '/admin' })
   })
   .post(
     '/seed',
-    async ({ prisma }: { prisma: PrismaClient }) => {
+    async ({ prisma }: any) => {
       try {
         await prisma.cartItem.deleteMany()
         await prisma.cart.deleteMany()
@@ -111,6 +111,7 @@ export const adminRoutes = new Elysia({ prefix: '/admin' })
           prisma.product.create({
             data: {
               name: 'Laptop',
+              sku: 'LAPTOP-001',
               description: 'High-performance laptop for professionals',
               price: '999.99',
               stock: 10,
@@ -120,6 +121,7 @@ export const adminRoutes = new Elysia({ prefix: '/admin' })
           prisma.product.create({
             data: {
               name: 'Wireless Mouse',
+              sku: 'MOUSE-001',
               description: 'Ergonomic wireless mouse',
               price: '29.99',
               stock: 50,
@@ -129,6 +131,7 @@ export const adminRoutes = new Elysia({ prefix: '/admin' })
           prisma.product.create({
             data: {
               name: 'USB-C Hub',
+              sku: 'HUB-001',
               description: 'Multi-port USB-C hub for connectivity',
               price: '49.99',
               stock: 30,

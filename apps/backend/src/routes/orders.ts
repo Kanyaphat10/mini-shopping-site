@@ -79,7 +79,7 @@ export const orderRoutes = new Elysia({ prefix: '/orders' })
         )
 
         // Use transaction to ensure consistency
-        const order = await prisma.$transaction(async (tx) => {
+        const order = await prisma.$transaction(async (tx: any) => {
           // Decrement stock
           for (const item of cart.items) {
             await tx.product.update({
@@ -142,7 +142,7 @@ export const orderRoutes = new Elysia({ prefix: '/orders' })
     },
     {
       body: t.Object({
-        status: t.Enum(['PENDING', 'CONFIRMED', 'SHIPPED', 'DELIVERED', 'CANCELLED']),
+        status: t.Union([t.Literal('PENDING'), t.Literal('CONFIRMED'), t.Literal('SHIPPED'), t.Literal('DELIVERED'), t.Literal('CANCELLED')]),
       }),
     }
   )
