@@ -27,6 +27,7 @@ export default function RegisterPage() {
   const {
     register,
     handleSubmit,
+    resetField,
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -38,10 +39,25 @@ export default function RegisterPage() {
 
     try {
       const response = await authService.register(data.email, data.password, data.name)
+      if (response.data && response.data.error) {
+        if (response.data.error === 'EMAIL_EXISTS') {
+          setError('Account already exists. Please log in instead.')
+          resetField('email')
+        } else {
+          setError(response.data.error)
+        }
+        return
+      }
       login(response.data.user, response.data.token, response.data.sessionToken)
       navigate('/')
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Registration failed')
+      const errorMsg = err.response?.data?.error || err.message
+      if (err.response?.status === 409 || errorMsg === 'EMAIL_EXISTS') {
+        setError('Account already exists. Please log in instead.')
+        resetField('email')
+      } else {
+        setError(errorMsg || 'Registration failed')
+      }
     } finally {
       setLoading(false)
     }
