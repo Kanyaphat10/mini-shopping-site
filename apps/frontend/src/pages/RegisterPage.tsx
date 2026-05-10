@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { authService } from '../services/api'
 import { useAuthStore } from '../store/authStore'
-import { redirectToGoogleAuth } from '../utils/googleAuth'
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
 
 const schema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -48,7 +48,7 @@ export default function RegisterPage() {
   }
 
   const handleGoogleSignup = () => {
-    redirectToGoogleAuth()
+    window.location.href = `${API_BASE_URL}/api/auth/google`
   }
 
   return (

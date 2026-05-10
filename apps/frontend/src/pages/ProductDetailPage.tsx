@@ -55,7 +55,7 @@ export default function ProductDetailPage() {
         cartId: response.data.cartId,
         productId: product!.id,
         quantity,
-        product,
+        product: product!,
       })
       navigate('/cart')
     } catch (error) {

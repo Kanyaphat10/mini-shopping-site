@@ -27,8 +27,6 @@ export const authService = {
     apiClient.post('/auth/login', { email, password }),
   getMe: () => apiClient.get('/auth/me'),
   logout: () => apiClient.post('/auth/logout'),
-  googleCallback: (email: string, name: string, id: string) =>
-    apiClient.post('/auth/google/callback', { email, name, id }),
   validateSession: () => apiClient.get('/auth/session/validate'),
 }
 

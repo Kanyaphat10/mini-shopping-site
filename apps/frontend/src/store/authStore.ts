@@ -8,6 +8,8 @@ export interface User {
   role: 'ADMIN' | 'CUSTOMER' | 'COURIER' | 'SERVICE_AGENT'
 }
 
+export const __mockUser: any = () => {}
+
 interface AuthState {
   user: User | null
   token: string | null

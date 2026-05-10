@@ -86,7 +86,9 @@ export default function ProfilePage() {
       const res = await userService.updateMe(payload)
       if (res.data.error) throw new Error(res.data.error)
       
-      setUser({ ...user, name: res.data.name })
+      if (user) {
+        setUser({ ...user, name: res.data.name })
+      }
       setMessage({ type: 'success', text: 'Profile updated successfully!' })
       setPassword('')
     } catch (error: any) {
