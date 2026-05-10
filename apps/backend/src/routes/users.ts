@@ -15,7 +15,7 @@ export const usersRoutes = new Elysia({ prefix: '/users' })
       }
 
       const users = await prisma.user.findMany({
-        select: { id: true, email: true, name: true, role: true, vehicleType: true, createdAt: true },
+        select: { id: true, email: true, name: true, role: true, vehicleType: true, image: true, createdAt: true },
       })
 
       return users
@@ -37,7 +37,7 @@ export const usersRoutes = new Elysia({ prefix: '/users' })
 
       const user = await prisma.user.findUnique({
         where: { id },
-        select: { id: true, email: true, name: true, role: true, vehicleType: true, createdAt: true },
+        select: { id: true, email: true, name: true, role: true, vehicleType: true, image: true, createdAt: true },
       })
 
       return user
@@ -85,11 +85,12 @@ export const usersRoutes = new Elysia({ prefix: '/users' })
       if (body.name) dataToUpdate.name = body.name
       if (body.password) dataToUpdate.password = await hashPassword(body.password)
       if (body.vehicleType && payload.role === 'COURIER') dataToUpdate.vehicleType = body.vehicleType
+      if (body.image) dataToUpdate.image = body.image
 
       const updatedUser = await prisma.user.update({
         where: { id: payload.userId },
         data: dataToUpdate,
-        select: { id: true, email: true, name: true, role: true, vehicleType: true },
+        select: { id: true, email: true, name: true, role: true, vehicleType: true, image: true },
       })
 
       return updatedUser
@@ -101,6 +102,7 @@ export const usersRoutes = new Elysia({ prefix: '/users' })
       name: t.Optional(t.String()),
       password: t.Optional(t.String()),
       vehicleType: t.Optional(t.String()),
+      image: t.Optional(t.String()),
     })
   })
 
@@ -121,8 +123,9 @@ export const usersRoutes = new Elysia({ prefix: '/users' })
           name: body.name,
           email: body.email,
           role: body.role,
+          image: body.image,
         },
-        select: { id: true, email: true, name: true, role: true, vehicleType: true },
+        select: { id: true, email: true, name: true, role: true, vehicleType: true, image: true },
       })
 
       return updatedUser
@@ -134,5 +137,6 @@ export const usersRoutes = new Elysia({ prefix: '/users' })
       name: t.Optional(t.String()),
       email: t.Optional(t.String()),
       role: t.Optional(t.Union([t.Literal('ADMIN'), t.Literal('CUSTOMER'), t.Literal('COURIER'), t.Literal('SERVICE_AGENT')])),
+      image: t.Optional(t.String()),
     })
   })

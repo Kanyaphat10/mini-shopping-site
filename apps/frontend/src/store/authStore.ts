@@ -6,6 +6,7 @@ export interface User {
   email: string
   name: string
   role: 'ADMIN' | 'CUSTOMER' | 'COURIER' | 'SERVICE_AGENT'
+  image?: string
 }
 
 export const __mockUser: any = () => {}

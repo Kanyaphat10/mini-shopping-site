@@ -119,8 +119,15 @@ export default function Header() {
                   Profile
                 </Link>
 
-                <div className="flex items-center gap-4 pl-4 border-l border-border">
-                  <span className="text-sm text-muted-foreground">
+                <div className="flex items-center gap-3 pl-4 border-l border-border">
+                  {user.image ? (
+                    <img src={user.image} alt={user.name} className="w-8 h-8 rounded-full object-cover border border-border" />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
+                      {user.name.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <span className="text-sm font-medium">
                     {user.name}
                   </span>
                   <button

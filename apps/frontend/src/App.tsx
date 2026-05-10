@@ -4,6 +4,7 @@ import { useAuthStore } from './store/authStore'
 import Header from './components/Header'
 import Footer from './components/Footer'
 import { ThemeProvider } from "./components/ThemeProvider"
+import { Toaster } from 'sonner'
 
 // Pages
 import HomePage from './pages/HomePage'
@@ -46,6 +47,7 @@ function App() {
 
   return (
     <ThemeProvider>
+      <Toaster position="top-center" richColors />
       <Router>
         <div className="flex flex-col min-h-screen bg-background">
           <Header />

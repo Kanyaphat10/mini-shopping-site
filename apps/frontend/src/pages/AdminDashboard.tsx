@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { adminService, productService } from '../services/api'
 import { useAuthStore } from '../store/authStore'
-import { Users, ShoppingCart, Package, DollarSign, Edit, Plus, Trash2 } from 'lucide-react'
+import { Users, ShoppingCart, Package, DollarSign, Edit, Plus, Trash2, Upload, Loader2, Image as ImageIcon } from 'lucide-react'
+import { toast } from 'sonner'
 
 interface Stats {
   totalUsers: number
@@ -29,6 +30,7 @@ interface Product {
   description: string
   price: string
   stock: number
+  image?: string
   productStatus: string
 }
 
@@ -50,8 +52,10 @@ export default function AdminDashboard() {
     description: '',
     price: '',
     stock: '',
+    image: '',
     productStatus: 'ACTIVE',
   })
+  const [isUploading, setIsUploading] = useState(false)
 
   useEffect(() => {
     if (!user || user.role !== 'ADMIN') {
@@ -122,9 +126,40 @@ export default function AdminDashboard() {
       description: product.description,
       price: product.price.toString(),
       stock: product.stock.toString(),
+      image: product.image || '',
       productStatus: product.productStatus,
     })
     setShowProductForm(true)
+  }
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setIsUploading(true)
+    try {
+      const formDataUpload = new FormData()
+      formDataUpload.append('file', file)
+      formDataUpload.append('uploadType', '0')
+      
+      const response = await fetch('https://up.m1r.ai/upload', {
+        method: 'POST',
+        body: formDataUpload,
+      })
+      
+      if (!response.ok) throw new Error('Upload failed')
+      
+      const data = await response.json()
+      setFormData(prev => ({ ...prev, image: data.url }))
+      toast.success('Image uploaded successfully')
+    } catch (error) {
+      toast.error('Failed to upload image', {
+        description: (error as Error).message,
+        duration: 5000,
+      })
+    } finally {
+      setIsUploading(false)
+    }
   }
 
   const handleArchiveProduct = async (id: string) => {
@@ -265,7 +300,7 @@ export default function AdminDashboard() {
                 <button
                   onClick={() => {
                     setEditingProduct(null)
-                    setFormData({ sku: '', name: '', description: '', price: '', stock: '', productStatus: 'ACTIVE' })
+                    setFormData({ sku: '', name: '', description: '', price: '', stock: '', image: '', productStatus: 'ACTIVE' })
                     setShowProductForm(true)
                   }}
                   className="bg-primary text-primary-foreground px-4 py-2 rounded-lg font-semibold flex items-center gap-2 hover:opacity-90 transition"
@@ -351,6 +386,27 @@ export default function AdminDashboard() {
                   <div>
                     <label className="block text-sm font-medium mb-1">Stock</label>
                     <input type="number" required value={formData.stock} onChange={e => setFormData({...formData, stock: e.target.value})} className="w-full px-4 py-2 border border-border rounded-lg" />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1">Product Image</label>
+                  <div className="flex items-center gap-4 mt-1">
+                    <div className="w-24 h-24 rounded-lg border-2 border-dashed border-border flex items-center justify-center overflow-hidden bg-muted">
+                      {formData.image ? (
+                        <img src={formData.image} alt="Preview" className="w-full h-full object-cover" />
+                      ) : (
+                        <ImageIcon className="text-muted-foreground" size={32} />
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <label className="inline-flex items-center gap-2 px-4 py-2 bg-secondary text-secondary-foreground rounded-lg cursor-pointer hover:opacity-90 transition">
+                        {isUploading ? <Loader2 className="animate-spin" size={18} /> : <Upload size={18} />}
+                        <span>{isUploading ? 'Uploading...' : 'Upload Image'}</span>
+                        <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} disabled={isUploading} />
+                      </label>
+                      <p className="text-xs text-muted-foreground mt-2">Recommended: Square image, max 5MB</p>
+                    </div>
                   </div>
                 </div>
                 <div className="flex justify-end gap-2 pt-4">

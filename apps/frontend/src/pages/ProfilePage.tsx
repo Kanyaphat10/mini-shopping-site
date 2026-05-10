@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import { userService, orderService } from '../services/api'
+import { Camera, Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
 
 interface Order {
   id: string
@@ -23,6 +25,7 @@ export default function ProfilePage() {
   const [password, setPassword] = useState('')
   const [vehicleType, setVehicleType] = useState('')
   const [loading, setLoading] = useState(false)
+  const [isUploading, setIsUploading] = useState(false)
   const [message, setMessage] = useState({ type: '', text: '' })
   
   const [orders, setOrders] = useState<Order[]>([])
@@ -98,6 +101,43 @@ export default function ProfilePage() {
     }
   }
 
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setIsUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('uploadType', '0')
+      
+      const response = await fetch('https://up.m1r.ai/upload', {
+        method: 'POST',
+        body: formData,
+      })
+      
+      if (!response.ok) throw new Error('Upload failed')
+      
+      const data = await response.json()
+      
+      // Save URL to backend
+      const updateRes = await userService.updateMe({ image: data.url })
+      if (updateRes.data.error) throw new Error(updateRes.data.error)
+      
+      if (user) {
+        setUser({ ...user, image: data.url })
+      }
+      toast.success('Profile photo updated')
+    } catch (error) {
+      toast.error('Failed to upload photo', {
+        description: (error as Error).message,
+        duration: 5000,
+      })
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
   if (!user) return null
 
   return (
@@ -105,13 +145,30 @@ export default function ProfilePage() {
       <div className="bg-card rounded-2xl border border-border p-8 shadow-sm">
         <h1 className="text-3xl font-bold mb-6">My Profile</h1>
         
-        {message.text && (
-          <div className={`p-4 rounded-lg mb-6 ${message.type === 'error' ? 'bg-red-100 text-red-700' : message.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
-            {message.text}
+        <div className="flex flex-col md:flex-row gap-8 items-start">
+          <div className="relative group">
+            <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-primary/20 bg-muted flex items-center justify-center">
+              {user.image ? (
+                <img src={user.image} alt={user.name} className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-4xl font-bold text-muted-foreground">
+                  {user.name.charAt(0).toUpperCase()}
+                </span>
+              )}
+            </div>
+            <label className="absolute bottom-0 right-0 p-2 bg-primary text-primary-foreground rounded-full cursor-pointer shadow-lg hover:scale-110 transition group-hover:bg-primary/90">
+              {isUploading ? <Loader2 className="animate-spin" size={18} /> : <Camera size={18} />}
+              <input type="file" className="hidden" accept="image/*" onChange={handleAvatarUpload} disabled={isUploading} />
+            </label>
           </div>
-        )}
 
-        <form onSubmit={handleUpdateProfile} className="space-y-6 max-w-md">
+          <div className="flex-1 w-full">
+            {message.text && (
+              <div className={`p-4 rounded-lg mb-6 ${message.type === 'error' ? 'bg-red-100 text-red-700' : message.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
+                {message.text}
+              </div>
+            )}
+            <form onSubmit={handleUpdateProfile} className="space-y-6 max-w-md">
           <div>
             <label className="block text-sm font-medium mb-2">Email (Read Only)</label>
             <input 
@@ -165,6 +222,8 @@ export default function ProfilePage() {
             {loading ? 'Updating...' : 'Update Profile'}
           </button>
         </form>
+          </div>
+        </div>
       </div>
 
       {user.role === 'CUSTOMER' && (
