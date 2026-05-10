@@ -14,9 +14,11 @@ model User {
   name        String
   role        UserRole @default(CUSTOMER)
   vehicleType String? // Specific for COURIER role
-  image       String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  image               String?
+  failedLoginAttempts Int       @default(0)
+  lockoutUntil        DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
 
   cartItems     CartItem[]
   orders        Order[]

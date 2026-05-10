@@ -62,7 +62,7 @@ export const authRoutes = new Elysia({ prefix: '/auth' })
   // Email/Password Login
   .post(
     '/login',
-    async ({ body, prisma }: any) => {
+    async ({ body, prisma, set }: any) => {
       try {
         const validated = LoginSchema.parse(body)
 
@@ -74,6 +74,16 @@ export const authRoutes = new Elysia({ prefix: '/auth' })
           return { error: 'Invalid credentials' }
         }
 
+        // Check if account is currently locked
+        if (user.lockoutUntil && user.lockoutUntil > new Date()) {
+          const remainingMinutes = Math.ceil((user.lockoutUntil.getTime() - Date.now()) / 60000)
+          set.status = 423
+          return { 
+            error: 'ACCOUNT_LOCKED', 
+            message: `Too many failed attempts. Please try again in ${remainingMinutes} minutes.` 
+          }
+        }
+
         if (!user.password) {
           return { error: 'Please use OAuth to sign in' }
         }
@@ -81,8 +91,37 @@ export const authRoutes = new Elysia({ prefix: '/auth' })
         const passwordMatch = await comparePassword(validated.password, user.password)
 
         if (!passwordMatch) {
+          const newAttempts = user.failedLoginAttempts + 1
+          const isLocked = newAttempts >= 5
+          const lockoutUntil = isLocked ? new Date(Date.now() + 15 * 60 * 1000) : user.lockoutUntil
+
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { 
+              failedLoginAttempts: newAttempts,
+              lockoutUntil
+            }
+          })
+
+          if (isLocked) {
+            set.status = 423
+            return { 
+              error: 'ACCOUNT_LOCKED', 
+              message: 'Too many failed attempts. Account locked for 15 minutes.' 
+            }
+          }
+
           return { error: 'Invalid credentials' }
         }
+
+        // Reset failed attempts on successful login
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { 
+            failedLoginAttempts: 0,
+            lockoutUntil: null
+          }
+        })
 
         const token = generateToken(user.id, user.email, user.role)
         const session = await createSession(user.id)
