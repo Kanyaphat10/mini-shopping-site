@@ -109,28 +109,28 @@ describe('Checkout and Cart Flow', () => {
     expect(data.details.length).toBeGreaterThan(0);
   });
 
-  it('should succeed checkout with valid stock and clear cart', async () => {
-    // Reduce quantity back to 2 (which is the stock)
-    const cartRes = await app.handle(
-      new Request('http://localhost/cart/', {
-        method: 'GET',
+  it('should succeed checkout with valid stock and clear cart after settlement', async () => {
+    // 0. Clear cart first to ensure clean state
+    await app.handle(
+      new Request('http://localhost/cart/clear', {
+        method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
       })
     );
-    const cart: any = await cartRes.json();
-    const itemId = cart.items[0].id;
 
+    // 1. Add item to cart specifically for this test to ensure state
     await app.handle(
-      new Request(`http://localhost/cart/item/${itemId}`, {
-        method: 'PUT',
+      new Request('http://localhost/cart/add', {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ quantity: 2 }),
+        body: JSON.stringify({ productId: testProductId, quantity: 2 }),
       })
     );
 
+    // 2. Perform checkout
     const response = await app.handle(
       new Request('http://localhost/orders/create', {
         method: 'POST',
@@ -147,18 +147,30 @@ describe('Checkout and Cart Flow', () => {
     expect(data.shippingAddr).toBe('123 Test Ave');
     expect(data.items.length).toBe(1);
 
-    // Verify stock is decremented
+    // 3. Verify stock is decremented
     const product = await prisma.product.findUnique({ where: { id: testProductId } });
     expect(product?.stock).toBe(0);
 
-    // Verify cart is cleared
-    const cartVerify = await app.handle(
+    // 4. Settle the order to clear the cart
+    await app.handle(
+      new Request(`http://localhost/orders/${data.id}/status`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status: 'SETTLED' }),
+      })
+    );
+
+    // 5. Verify cart is cleared
+    const cartAfterVerify = await app.handle(
       new Request('http://localhost/cart/', {
         method: 'GET',
         headers: { Authorization: `Bearer ${token}` },
       })
     );
-    const cartData: any = await cartVerify.json();
+    const cartData: any = await cartAfterVerify.json();
     expect(cartData.items.length).toBe(0);
   });
 });
