@@ -17,6 +17,8 @@ import RegisterPage from './pages/RegisterPage'
 import AuthSuccessPage from './pages/AuthSuccessPage'
 import CourierDashboard from './pages/CourierDashboard'
 import AdminDashboard from './pages/AdminDashboard'
+import ServiceDashboard from './pages/ServiceDashboard'
+import ProfilePage from './pages/ProfilePage'
 import { authService } from './services/api'
 
 function App() {
@@ -82,6 +84,16 @@ function App() {
             {/* Protected courier routes */}
             {user?.role === 'COURIER' && (
               <Route path="/courier" element={<CourierDashboard />} />
+            )}
+
+            {/* Protected service agent routes */}
+            {user?.role === 'SERVICE_AGENT' && (
+              <Route path="/service" element={<ServiceDashboard />} />
+            )}
+
+            {/* Protected profile route for all users */}
+            {user && (
+              <Route path="/profile" element={<ProfilePage />} />
             )}
 
             {/* Protected admin routes */}

@@ -107,6 +107,15 @@ export const adminRoutes = new Elysia({ prefix: '/admin' })
           },
         })
 
+        const agent = await prisma.user.create({
+          data: {
+            email: 'agent@example.com',
+            password: await hashPassword('agent123'),
+            name: 'Alice Support',
+            role: 'SERVICE_AGENT',
+          },
+        })
+
         const products = await Promise.all([
           prisma.product.create({
             data: {
@@ -143,7 +152,7 @@ export const adminRoutes = new Elysia({ prefix: '/admin' })
         return {
           success: true,
           message: 'Database seeded successfully',
-          data: { admin, customers: [customer1, customer2], courier, products },
+          data: { admin, customers: [customer1, customer2], courier, agent, products },
         }
       } catch (error: any) {
         return { error: error.message }
