@@ -8,7 +8,7 @@ import { generateToken } from './utils/auth';
 const prisma = new PrismaClient();
 
 describe('Checkout and Cart Flow', () => {
-  let app: Elysia;
+  let app: any;
   let testUserId: string;
   let token: string;
   let testProductId: string;
@@ -25,7 +25,7 @@ describe('Checkout and Cart Flow', () => {
       },
     });
     testUserId = user.id;
-    token = generateToken(user.id, user.role);
+    token = generateToken(user.id, user.email, user.role);
 
     // Create a test product with limited stock
     const product = await prisma.product.create({
