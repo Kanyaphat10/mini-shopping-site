@@ -14,7 +14,7 @@ describe('Checkout and Cart Flow', () => {
   let testProductId: string;
 
   beforeAll(async () => {
-    app = new Elysia().use(cartRoutes).use(orderRoutes);
+    app = new Elysia().decorate({ prisma }).use(cartRoutes).use(orderRoutes);
 
     // Create a test user
     const user = await prisma.user.create({
