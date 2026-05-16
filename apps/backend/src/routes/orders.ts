@@ -172,13 +172,18 @@ export const orderRoutes = new Elysia({ prefix: '/orders' })
 
           // Clear cart only if order is SETTLED
           if (body.status === 'SETTLED') {
-            const cart = await tx.cart.findUnique({
+            await tx.cart.updateMany({
+              where: { userId: order.userId },
+              data: {}
+            });
+            // We find the cart first to delete items
+            const userCart = await tx.cart.findUnique({
               where: { userId: order.userId }
-            })
-            if (cart) {
+            });
+            if (userCart) {
               await tx.cartItem.deleteMany({
-                where: { cartId: cart.id }
-              })
+                where: { cartId: userCart.id }
+              });
             }
           }
           return order
