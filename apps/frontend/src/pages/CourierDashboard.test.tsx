@@ -42,12 +42,16 @@ const mockShipments = [
 
 const mockGetCourierShipments = vi.fn().mockResolvedValue({ data: mockShipments });
 const mockUpdateShipment = vi.fn().mockResolvedValue({ data: { success: true } });
+const mockUpdateOrderStatus = vi.fn().mockResolvedValue({ data: { success: true } });
 
 vi.mock('../services/api', () => ({
   shipmentService: {
     getCourierShipments: (...args: any[]) => mockGetCourierShipments(...args),
     update: (...args: any[]) => mockUpdateShipment(...args),
   },
+  orderService: {
+    updateStatus: (...args: any[]) => mockUpdateOrderStatus(...args),
+  }
 }));
 
 describe('CourierDashboard', () => {
@@ -72,7 +76,7 @@ describe('CourierDashboard', () => {
     expect(screen.getByText('2')).toBeDefined(); // Total
 
     // Click filter IN_TRANSIT
-    const inTransitFilter = screen.getByRole('button', { name: /IN TRANSIT/i });
+    const inTransitFilter = screen.getByRole('button', { name: /Transit to Hub/i });
     fireEvent.click(inTransitFilter);
 
     // Only 'Another User' should be visible

@@ -4,11 +4,10 @@ import { useCartStore } from '../store/cartStore'
 import { ShoppingCart, LogOut, Menu } from 'lucide-react'
 import { useState } from 'react'
 import { authService } from '../services/api'
-import { Sun, Moon } from "lucide-react"
-import { useTheme } from "./ThemeProvider"
+
 
 export default function Header() {
-  const { theme, toggleTheme } = useTheme()
+
   const { user, logout } = useAuthStore()
   const { items } = useCartStore()
   const navigate = useNavigate()
@@ -40,14 +39,7 @@ export default function Header() {
             >
               Products
             </Link>
-            {/* Dark mode toggle — Mobile */}
-            <button
-              onClick={toggleTheme}
-              className="flex items-center gap-2 text-foreground hover:text-primary transition"
-            >
-              {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
-              {theme === "dark" ? "Light Mode" : "Dark Mode"}
-            </button>
+
             {!user && (
               <>
                 <Link
@@ -134,17 +126,7 @@ export default function Header() {
                     onClick={handleLogout}
                     className="flex items-center gap-2 text-destructive hover:opacity-80 transition"
                   >
-                    {/* Dark mode toggle — Desktop */}
-                    <button
-                      onClick={toggleTheme}
-                      className="text-foreground hover:text-primary transition"
-                    >
-                      {theme === "dark" ? (
-                        <Sun size={20} />
-                      ) : (
-                        <Moon size={20} />
-                      )}
-                    </button>
+
                     <LogOut size={20} />
                   </button>
                 </div>
@@ -170,14 +152,7 @@ export default function Header() {
             >
               Products
             </Link>
-            {/* Dark mode toggle — Mobile */}
-            <button
-              onClick={toggleTheme}
-              className="flex items-center gap-2 text-foreground hover:text-primary transition"
-            >
-              {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
-              {theme === "dark" ? "Light Mode" : "Dark Mode"}
-            </button>
+
             {!user && (
               <>
                 <Link

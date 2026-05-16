@@ -39,6 +39,9 @@ vi.mock('../services/api', () => ({
     getUserOrders: (...args: any[]) => mockGetUserOrders(...args),
     update: (...args: any[]) => mockUpdate(...args),
   },
+  orderService: {
+    updateStatus: vi.fn().mockResolvedValue({ data: { success: true } })
+  }
 }));
 
 import { __mockUser } from '../store/authStore';
@@ -107,5 +110,40 @@ describe('ServiceDashboard', () => {
       // Should exit edit mode and show updated name
       expect(screen.queryByRole('button', { name: /Save Changes/i })).toBeNull();
     });
+  });
+
+  it('allows service agent to cancel an order', async () => {
+    // Mock window.confirm to return true
+    vi.spyOn(window, 'confirm').mockImplementation(() => true);
+    
+    render(
+      <BrowserRouter>
+        <ServiceDashboard />
+      </BrowserRouter>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Bob')).toBeDefined();
+    });
+
+    // Click on Bob
+    fireEvent.click(screen.getByText('Bob'));
+
+    let cancelBtn: any;
+    await waitFor(() => {
+      cancelBtn = screen.getByRole('button', { name: /Cancel Order/i });
+      expect(cancelBtn).toBeDefined();
+    });
+
+    // Click Cancel Order
+    fireEvent.click(cancelBtn);
+
+    const { orderService } = await import('../services/api');
+    await waitFor(() => {
+      expect(orderService.updateStatus).toHaveBeenCalledWith('o1', 'CANCELLED');
+      expect(mockGetUserOrders).toHaveBeenCalledTimes(2); // Refreshes orders
+    });
+    
+    vi.restoreAllMocks();
   });
 });

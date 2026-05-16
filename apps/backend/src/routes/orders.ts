@@ -137,11 +137,11 @@ export const orderRoutes = new Elysia({ prefix: '/orders' })
             include: { items: true, payment: true },
           })
 
-          // Note: Cart clearing will be moved to settlement in Feature 4
+          // Clear cart immediately upon successful order creation
           await tx.cartItem.deleteMany({
-            where: { cartId: cart.id },
+            where: { cartId: cart.id }
           })
-
+          
           return createdOrder
         })
 
@@ -166,18 +166,30 @@ export const orderRoutes = new Elysia({ prefix: '/orders' })
     '/:id/status',
     async ({ params: { id }, body, prisma }: any) => {
       try {
-        const order = await prisma.order.update({
-          where: { id },
-          data: { status: body.status },
+        const result = await prisma.$transaction(async (tx: any) => {
+          const order = await tx.order.update({
+            where: { id },
+            data: { status: body.status },
+          })
+          return order
         })
-        return order
+        return result
       } catch (error: any) {
         return { error: error.message }
       }
     },
     {
       body: t.Object({
-        status: t.Union([t.Literal('PENDING'), t.Literal('CONFIRMED'), t.Literal('SHIPPED'), t.Literal('DELIVERED'), t.Literal('CANCELLED')]),
+        status: t.Union([
+          t.Literal('PENDING'), 
+          t.Literal('PROCESSING'),
+          t.Literal('SHIPPED'), 
+          t.Literal('IN_TRANSIT'),
+          t.Literal('OUT_FOR_DELIVERY'),
+          t.Literal('DELIVERED'), 
+          t.Literal('FAILED'),
+          t.Literal('CANCELLED')
+        ]),
       }),
     }
   )

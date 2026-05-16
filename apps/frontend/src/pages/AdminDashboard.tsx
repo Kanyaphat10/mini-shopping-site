@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { adminService, productService } from '../services/api'
+import { adminService, productService, orderService, userService, shipmentService } from '../services/api'
 import { useAuthStore } from '../store/authStore'
 import { Users, ShoppingCart, Package, DollarSign, Edit, Plus, Trash2, Upload, Loader2, Image as ImageIcon } from 'lucide-react'
 import { toast } from 'sonner'
@@ -40,6 +40,7 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState<Stats | null>(null)
   const [orders, setOrders] = useState<Order[]>([])
   const [products, setProducts] = useState<Product[]>([])
+  const [couriers, setCouriers] = useState<{id: string, name: string}[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('overview')
 
@@ -69,14 +70,16 @@ export default function AdminDashboard() {
   const fetchData = async () => {
     setLoading(true)
     try {
-      const [statsRes, ordersRes, productsRes] = await Promise.all([
+      const [statsRes, ordersRes, productsRes, usersRes] = await Promise.all([
         adminService.getStats(),
         adminService.getOrders(),
         productService.getAll(),
+        userService.getAll(),
       ])
       setStats(statsRes.data)
       setOrders(ordersRes.data)
       setProducts(productsRes.data)
+      setCouriers(usersRes.data.filter((u: any) => u.role === 'COURIER'))
     } catch (error) {
       console.error('Error fetching admin data:', error)
     } finally {
@@ -260,6 +263,7 @@ export default function AdminDashboard() {
                       <th className="px-6 py-3 text-left text-sm font-semibold">Customer</th>
                       <th className="px-6 py-3 text-left text-sm font-semibold">Amount</th>
                       <th className="px-6 py-3 text-left text-sm font-semibold">Status</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold">Courier</th>
                       <th className="px-6 py-3 text-left text-sm font-semibold">Date</th>
                     </tr>
                   </thead>
@@ -275,9 +279,59 @@ export default function AdminDashboard() {
                         </td>
                         <td className="px-6 py-3 font-semibold">${parseFloat(order.totalPrice).toFixed(2)}</td>
                         <td className="px-6 py-3">
-                          <span className="px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
-                            {order.status}
-                          </span>
+                          <select
+                            value={order.status}
+                            onChange={async (e) => {
+                              try {
+                                await orderService.updateStatus(order.id, e.target.value);
+                                fetchData();
+                              } catch (err) {
+                                toast.error('Failed to update order status');
+                              }
+                            }}
+                            className="bg-background border border-input rounded p-1 text-sm font-semibold"
+                          >
+                            <option value="PENDING">PENDING</option>
+                            <option value="PROCESSING">PROCESSING</option>
+                            <option value="SHIPPED">SHIPPED</option>
+                            <option value="IN_TRANSIT">IN_TRANSIT</option>
+                            <option value="OUT_FOR_DELIVERY">OUT_FOR_DELIVERY</option>
+                            <option value="DELIVERED">DELIVERED</option>
+                            <option value="FAILED">FAILED</option>
+                            <option value="CANCELLED">CANCELLED</option>
+                          </select>
+                        </td>
+                        <td className="px-6 py-3">
+                          {(order as any).shipment ? (
+                            <span className="text-sm font-medium">Assigned</span>
+                          ) : (
+                            <div className="flex gap-2">
+                              <select 
+                                id={`courier-${order.id}`}
+                                className="bg-background border border-input rounded p-1 text-sm max-w-24"
+                              >
+                                <option value="">Select...</option>
+                                {couriers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                              </select>
+                              <button
+                                onClick={async () => {
+                                  const select = document.getElementById(`courier-${order.id}`) as HTMLSelectElement;
+                                  if (!select.value) return toast.error('Select a courier first');
+                                  try {
+                                    await shipmentService.assign(order.id, select.value);
+                                    await orderService.updateStatus(order.id, 'SHIPPED');
+                                    toast.success('Courier assigned');
+                                    fetchData();
+                                  } catch (err) {
+                                    toast.error('Failed to assign courier');
+                                  }
+                                }}
+                                className="bg-primary text-primary-foreground text-xs px-2 py-1 rounded font-semibold hover:opacity-90"
+                              >
+                                Assign
+                              </button>
+                            </div>
+                          )}
                         </td>
                         <td className="px-6 py-3 text-sm">{new Date(order.createdAt).toLocaleDateString()}</td>
                       </tr>

@@ -109,7 +109,7 @@ describe('Checkout and Cart Flow', () => {
     expect(data.details.length).toBeGreaterThan(0);
   });
 
-  it('should succeed checkout with valid stock and clear cart after settlement', async () => {
+  it('should succeed checkout with valid stock and clear cart', async () => {
     // 0. Clear cart first to ensure clean state
     await app.handle(
       new Request('http://localhost/cart/clear', {
@@ -151,19 +151,7 @@ describe('Checkout and Cart Flow', () => {
     const product = await prisma.product.findUnique({ where: { id: testProductId } });
     expect(product?.stock).toBe(0);
 
-    // 4. Settle the order to clear the cart
-    await app.handle(
-      new Request(`http://localhost/orders/${data.id}/status`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ status: 'SETTLED' }),
-      })
-    );
-
-    // 5. Verify cart is cleared
+    // 4. Verify cart is cleared immediately after order placement
     const cartAfterVerify = await app.handle(
       new Request('http://localhost/cart/', {
         method: 'GET',

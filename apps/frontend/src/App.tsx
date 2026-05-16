@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { useAuthStore } from './store/authStore'
 import Header from './components/Header'
 import Footer from './components/Footer'
-import { ThemeProvider } from "./components/ThemeProvider"
 import { Toaster } from 'sonner'
 
 // Pages
@@ -46,9 +45,9 @@ function App() {
   }, [])
 
   return (
-    <ThemeProvider>
+    <>
       <Toaster position="top-center" richColors />
-      <Router>
+      <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <div className="flex flex-col min-h-screen bg-background">
           <Header />
           <main className="flex-1 container mx-auto px-4 py-8">
@@ -112,7 +111,7 @@ function App() {
           <Footer />
         </div>
       </Router>
-    </ThemeProvider>
+    </>
   )
 }
 
