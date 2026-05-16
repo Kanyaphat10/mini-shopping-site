@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { userService } from '../services/api'
+import { userService, orderService } from '../services/api'
 import { useAuthStore } from '../store/authStore'
 import { Search, User, Edit, X, ShoppingBag } from 'lucide-react'
 
@@ -273,13 +273,33 @@ export default function ServiceDashboard() {
                             <p className="font-bold">${Number(order.totalPrice).toFixed(2)}</p>
                             <p className="text-xs text-muted-foreground">{order.items.length} items</p>
                           </div>
-                          <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
-                            order.status === 'DELIVERED' ? 'bg-green-100 text-green-700' :
-                            order.status === 'CANCELLED' ? 'bg-red-100 text-red-700' :
-                            'bg-blue-100 text-blue-700'
-                          }`}>
-                            {order.status}
-                          </span>
+                          <div className="flex flex-col items-end gap-2">
+                            <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
+                              order.status === 'DELIVERED' ? 'bg-green-100 text-green-700' :
+                              order.status === 'CANCELLED' ? 'bg-red-100 text-red-700' :
+                              'bg-blue-100 text-blue-700'
+                            }`}>
+                              {order.status}
+                            </span>
+                            {order.status !== 'CANCELLED' && order.status !== 'DELIVERED' && (
+                              <button
+                                onClick={async () => {
+                                  if (!window.confirm('Are you sure you want to cancel this order?')) return;
+                                  try {
+                                    await orderService.updateStatus(order.id, 'CANCELLED');
+                                    // Refresh orders list
+                                    const res = await userService.getUserOrders(selectedUser.id);
+                                    setUserOrders(res.data);
+                                  } catch (error) {
+                                    console.error('Failed to cancel order:', error);
+                                  }
+                                }}
+                                className="text-xs text-destructive hover:underline font-semibold"
+                              >
+                                Cancel Order
+                              </button>
+                            )}
+                          </div>
                         </div>
                       </div>
                     ))}

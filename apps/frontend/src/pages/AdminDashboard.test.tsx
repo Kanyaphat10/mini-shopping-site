@@ -25,6 +25,9 @@ vi.mock('../services/api', () => ({
         { id: '1', sku: 'SKU-1', name: 'Prod 1', price: '10', stock: 5, productStatus: 'ACTIVE' }
       ]
     }),
+  },
+  orderService: {
+    updateStatus: vi.fn().mockResolvedValue({ data: { success: true } })
   }
 }));
 
@@ -50,6 +53,39 @@ describe('AdminDashboard', () => {
     await waitFor(() => {
       expect(screen.getByText('10')).toBeDefined(); // Total Users
       expect(screen.getByText('20')).toBeDefined(); // Total Products
+    });
+  });
+
+  it('updates order status', async () => {
+    const { adminService, orderService } = await import('../services/api');
+    (adminService.getOrders as any).mockResolvedValue({
+      data: [{ id: 'order-1', status: 'PENDING', totalPrice: '10', createdAt: new Date().toISOString(), user: { name: 'User', email: 'user@example.com' } }]
+    });
+
+    render(
+      <BrowserRouter>
+        <AdminDashboard />
+      </BrowserRouter>
+    );
+
+    await waitFor(() => expect(screen.getByText('Admin Dashboard')).toBeDefined());
+
+    // Go to orders tab
+    const ordersTab = screen.getByRole('button', { name: /orders/i });
+    ordersTab.click();
+
+    let select: any;
+    await waitFor(() => {
+      select = screen.getByDisplayValue('PENDING');
+      expect(select).toBeDefined();
+    });
+
+    // Change status
+    select.value = 'DELIVERED';
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+
+    await waitFor(() => {
+      expect(orderService.updateStatus).toHaveBeenCalledWith('order-1', 'DELIVERED');
     });
   });
 });

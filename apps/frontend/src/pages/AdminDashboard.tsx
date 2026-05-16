@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { adminService, productService } from '../services/api'
+import { adminService, productService, orderService } from '../services/api'
 import { useAuthStore } from '../store/authStore'
 import { Users, ShoppingCart, Package, DollarSign, Edit, Plus, Trash2, Upload, Loader2, Image as ImageIcon } from 'lucide-react'
 import { toast } from 'sonner'
@@ -275,9 +275,25 @@ export default function AdminDashboard() {
                         </td>
                         <td className="px-6 py-3 font-semibold">${parseFloat(order.totalPrice).toFixed(2)}</td>
                         <td className="px-6 py-3">
-                          <span className="px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
-                            {order.status}
-                          </span>
+                          <select
+                            value={order.status}
+                            onChange={async (e) => {
+                              try {
+                                await orderService.updateStatus(order.id, e.target.value);
+                                fetchData();
+                              } catch (err) {
+                                toast.error('Failed to update order status');
+                              }
+                            }}
+                            className="bg-background border border-input rounded p-1 text-sm font-semibold"
+                          >
+                            <option value="PENDING">PENDING</option>
+                            <option value="CONFIRMED">CONFIRMED</option>
+                            <option value="SHIPPED">SHIPPED</option>
+                            <option value="DELIVERED">DELIVERED</option>
+                            <option value="CANCELLED">CANCELLED</option>
+                            <option value="SETTLED">SETTLED</option>
+                          </select>
                         </td>
                         <td className="px-6 py-3 text-sm">{new Date(order.createdAt).toLocaleDateString()}</td>
                       </tr>

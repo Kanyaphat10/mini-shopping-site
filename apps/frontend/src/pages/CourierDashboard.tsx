@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { shipmentService } from '../services/api'
+import { shipmentService, orderService } from '../services/api'
 import { useAuthStore } from '../store/authStore'
 import { MapPin, Truck, CheckCircle, X } from 'lucide-react'
 
@@ -148,7 +148,7 @@ export default function CourierDashboard() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between mb-3">
                   <div>
-                    <p className="font-semibold">{shipment.order.user.name}</p>
+                    <p className="font-semibold">{shipment.order?.user?.name || 'Unknown User'}</p>
                     <p className="text-sm text-muted-foreground font-mono">{shipment.order.id}</p>
                   </div>
                   <span className={`px-3 py-1 rounded-full text-sm font-semibold ${getStatusColor(shipment.status)}`}>
@@ -212,6 +212,14 @@ export default function CourierDashboard() {
                   trackingNumber: updateData.trackingNumber || undefined,
                   estimatedDelivery: updateData.estimatedDelivery ? new Date(updateData.estimatedDelivery).toISOString() : undefined,
                 })
+                
+                // Update corresponding order status
+                if (updateData.status === 'DELIVERED') {
+                  await orderService.updateStatus(selectedShipment.order.id, 'DELIVERED')
+                } else if (updateData.status === 'PICKED_UP') {
+                  await orderService.updateStatus(selectedShipment.order.id, 'SHIPPED')
+                }
+
                 // Refresh shipments
                 const response = await shipmentService.getCourierShipments(user!.id)
                 setShipments(response.data)

@@ -42,12 +42,16 @@ const mockShipments = [
 
 const mockGetCourierShipments = vi.fn().mockResolvedValue({ data: mockShipments });
 const mockUpdateShipment = vi.fn().mockResolvedValue({ data: { success: true } });
+const mockUpdateOrderStatus = vi.fn().mockResolvedValue({ data: { success: true } });
 
 vi.mock('../services/api', () => ({
   shipmentService: {
     getCourierShipments: (...args: any[]) => mockGetCourierShipments(...args),
     update: (...args: any[]) => mockUpdateShipment(...args),
   },
+  orderService: {
+    updateStatus: (...args: any[]) => mockUpdateOrderStatus(...args),
+  }
 }));
 
 describe('CourierDashboard', () => {
@@ -110,6 +114,7 @@ describe('CourierDashboard', () => {
       expect(mockUpdateShipment).toHaveBeenCalledWith('shipment-1', expect.objectContaining({
         status: 'PICKED_UP',
       }));
+      expect(mockUpdateOrderStatus).toHaveBeenCalledWith('order-1', 'SHIPPED');
     });
     
     await waitFor(() => {
