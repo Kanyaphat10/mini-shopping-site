@@ -152,7 +152,7 @@ describe('Checkout and Cart Flow', () => {
     expect(product?.stock).toBe(0);
 
     // 4. Settle the order to clear the cart
-    await app.handle(
+    const settleRes = await app.handle(
       new Request(`http://localhost/orders/${data.id}/status`, {
         method: 'PUT',
         headers: {
@@ -162,6 +162,13 @@ describe('Checkout and Cart Flow', () => {
         body: JSON.stringify({ status: 'SETTLED' }),
       })
     );
+    
+    expect(settleRes.status).toBe(200);
+    const settleData: any = await settleRes.json();
+    if (settleData.error) {
+      console.error('Settle Error:', settleData.error);
+    }
+    expect(settleData.error).toBeUndefined();
 
     // 5. Verify cart is cleared
     const cartAfterVerify = await app.handle(
