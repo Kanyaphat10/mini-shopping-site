@@ -193,8 +193,12 @@ export const orderRoutes = new Elysia({ prefix: '/orders' })
         status: t.Union([
           t.Literal('PENDING'), 
           t.Literal('CONFIRMED'), 
+          t.Literal('PROCESSING'),
           t.Literal('SHIPPED'), 
+          t.Literal('IN_TRANSIT'),
+          t.Literal('OUT_FOR_DELIVERY'),
           t.Literal('DELIVERED'), 
+          t.Literal('FAILED'),
           t.Literal('CANCELLED'),
           t.Literal('SETTLED')
         ]),

@@ -28,6 +28,12 @@ vi.mock('../services/api', () => ({
   },
   orderService: {
     updateStatus: vi.fn().mockResolvedValue({ data: { success: true } })
+  },
+  userService: {
+    getAll: vi.fn().mockResolvedValue({ data: [] })
+  },
+  shipmentService: {
+    assign: vi.fn().mockResolvedValue({ data: { success: true } })
   }
 }));
 

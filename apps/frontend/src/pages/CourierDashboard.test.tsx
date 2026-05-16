@@ -76,7 +76,7 @@ describe('CourierDashboard', () => {
     expect(screen.getByText('2')).toBeDefined(); // Total
 
     // Click filter IN_TRANSIT
-    const inTransitFilter = screen.getByRole('button', { name: /IN TRANSIT/i });
+    const inTransitFilter = screen.getByRole('button', { name: /Transit to Hub/i });
     fireEvent.click(inTransitFilter);
 
     // Only 'Another User' should be visible
@@ -114,7 +114,6 @@ describe('CourierDashboard', () => {
       expect(mockUpdateShipment).toHaveBeenCalledWith('shipment-1', expect.objectContaining({
         status: 'PICKED_UP',
       }));
-      expect(mockUpdateOrderStatus).toHaveBeenCalledWith('order-1', 'SHIPPED');
     });
     
     await waitFor(() => {

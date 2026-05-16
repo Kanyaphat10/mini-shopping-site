@@ -27,6 +27,7 @@ export const adminRoutes = new Elysia({ prefix: '/admin' })
           user: { select: { id: true, email: true, name: true } },
           items: true,
           payment: true,
+          shipment: true,
         },
       })
 

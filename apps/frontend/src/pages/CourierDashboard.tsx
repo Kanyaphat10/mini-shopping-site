@@ -52,9 +52,23 @@ export default function CourierDashboard() {
     fetchShipments()
   }, [user, navigate])
 
-  const filteredShipments = filter === 'ALL'
-    ? shipments
-    : shipments.filter(s => s.status === filter)
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'PENDING': return 'Awaiting Pickup';
+      case 'PICKED_UP': return 'Picked Up';
+      case 'IN_TRANSIT': return 'Transit to Hub';
+      case 'OUT_FOR_DELIVERY': return 'Attempting Delivery';
+      case 'DELIVERED': return 'Delivered Successfully';
+      case 'FAILED': return 'Delivery Failed';
+      default: return status.replace(/_/g, ' ');
+    }
+  }
+
+  const filteredShipments = shipments.filter(s => {
+    if (s.order?.status === 'CANCELLED') return false;
+    if (filter === 'ALL') return true;
+    return s.status === filter;
+  })
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -117,7 +131,7 @@ export default function CourierDashboard() {
 
       {/* Filters */}
       <div className="mb-6 flex gap-2 overflow-x-auto pb-2">
-        {['ALL', 'PENDING', 'PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED'].map((status) => (
+        {['ALL', 'PENDING', 'PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED', 'FAILED'].map((status) => (
           <button
             key={status}
             onClick={() => setFilter(status)}
@@ -127,7 +141,7 @@ export default function CourierDashboard() {
                 : 'border border-border text-foreground hover:bg-muted'
             }`}
           >
-            {status.replace(/_/g, ' ')}
+            {status === 'ALL' ? 'All' : getStatusLabel(status)}
           </button>
         ))}
       </div>
@@ -152,7 +166,7 @@ export default function CourierDashboard() {
                     <p className="text-sm text-muted-foreground font-mono">{shipment.order.id}</p>
                   </div>
                   <span className={`px-3 py-1 rounded-full text-sm font-semibold ${getStatusColor(shipment.status)}`}>
-                    {shipment.status.replace(/_/g, ' ')}
+                    {getStatusLabel(shipment.status)}
                   </span>
                 </div>
 
@@ -174,19 +188,21 @@ export default function CourierDashboard() {
               </div>
 
               <div className="flex gap-2">
-                <button 
-                  onClick={() => {
-                    setSelectedShipment(shipment)
-                    setUpdateData({
-                      status: shipment.status,
-                      trackingNumber: shipment.trackingNumber || '',
-                      estimatedDelivery: shipment.estimatedDelivery ? new Date(shipment.estimatedDelivery).toISOString().split('T')[0] : ''
-                    })
-                  }}
-                  className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-semibold hover:opacity-90 transition"
-                >
-                  Update Status
-                </button>
+                {shipment.status !== 'DELIVERED' && (
+                  <button 
+                    onClick={() => {
+                      setSelectedShipment(shipment)
+                      setUpdateData({
+                        status: shipment.status,
+                        trackingNumber: shipment.trackingNumber || '',
+                        estimatedDelivery: shipment.estimatedDelivery ? new Date(shipment.estimatedDelivery).toISOString().split('T')[0] : ''
+                      })
+                    }}
+                    className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-semibold hover:opacity-90 transition"
+                  >
+                    Update Status
+                  </button>
+                )}
               </div>
             </div>
           ))}
@@ -213,13 +229,6 @@ export default function CourierDashboard() {
                   estimatedDelivery: updateData.estimatedDelivery ? new Date(updateData.estimatedDelivery).toISOString() : undefined,
                 })
                 
-                // Update corresponding order status
-                if (updateData.status === 'DELIVERED') {
-                  await orderService.updateStatus(selectedShipment.order.id, 'DELIVERED')
-                } else if (updateData.status === 'PICKED_UP') {
-                  await orderService.updateStatus(selectedShipment.order.id, 'SHIPPED')
-                }
-
                 // Refresh shipments
                 const response = await shipmentService.getCourierShipments(user!.id)
                 setShipments(response.data)
@@ -237,12 +246,12 @@ export default function CourierDashboard() {
                   onChange={(e) => setUpdateData({ ...updateData, status: e.target.value })}
                   className="w-full border border-input rounded-lg p-2 bg-background"
                 >
-                  <option value="PENDING">Pending</option>
+                  <option value="PENDING">Awaiting Pickup</option>
                   <option value="PICKED_UP">Picked Up</option>
-                  <option value="IN_TRANSIT">In Transit</option>
-                  <option value="OUT_FOR_DELIVERY">Out for Delivery</option>
-                  <option value="DELIVERED">Delivered</option>
-                  <option value="FAILED">Failed</option>
+                  <option value="IN_TRANSIT">Transit to Hub</option>
+                  <option value="OUT_FOR_DELIVERY">Attempting Delivery</option>
+                  <option value="DELIVERED">Delivered Successfully</option>
+                  <option value="FAILED">Delivery Failed</option>
                 </select>
               </div>
               

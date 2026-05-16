@@ -69,7 +69,10 @@ export const shipmentRoutes = new Elysia({ prefix: '/shipments' })
         // Sync order status
         let orderStatus;
         if (body.status === 'DELIVERED') orderStatus = 'DELIVERED';
-        else if (['PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY'].includes(body.status)) orderStatus = 'SHIPPED';
+        else if (body.status === 'PICKED_UP') orderStatus = 'SHIPPED';
+        else if (body.status === 'IN_TRANSIT') orderStatus = 'IN_TRANSIT';
+        else if (body.status === 'OUT_FOR_DELIVERY') orderStatus = 'OUT_FOR_DELIVERY';
+        else if (body.status === 'FAILED') orderStatus = 'FAILED';
 
         if (orderStatus) {
           await prisma.order.update({
