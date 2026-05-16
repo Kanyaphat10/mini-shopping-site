@@ -292,7 +292,6 @@ export default function AdminDashboard() {
                             className="bg-background border border-input rounded p-1 text-sm font-semibold"
                           >
                             <option value="PENDING">PENDING</option>
-                            <option value="CONFIRMED">CONFIRMED</option>
                             <option value="PROCESSING">PROCESSING</option>
                             <option value="SHIPPED">SHIPPED</option>
                             <option value="IN_TRANSIT">IN_TRANSIT</option>
@@ -300,7 +299,6 @@ export default function AdminDashboard() {
                             <option value="DELIVERED">DELIVERED</option>
                             <option value="FAILED">FAILED</option>
                             <option value="CANCELLED">CANCELLED</option>
-                            <option value="SETTLED">SETTLED</option>
                           </select>
                         </td>
                         <td className="px-6 py-3">

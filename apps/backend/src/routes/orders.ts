@@ -137,8 +137,10 @@ export const orderRoutes = new Elysia({ prefix: '/orders' })
             include: { items: true, payment: true },
           })
 
-          // Note: Cart clearing is now handled during order settlement (status = SETTLED)
-          // in the status update route.
+          // Clear cart immediately upon successful order creation
+          await tx.cartItem.deleteMany({
+            where: { cartId: cart.id }
+          })
           
           return createdOrder
         })
@@ -169,23 +171,6 @@ export const orderRoutes = new Elysia({ prefix: '/orders' })
             where: { id },
             data: { status: body.status },
           })
-
-          // Clear cart only if order is SETTLED
-          if (body.status === 'SETTLED') {
-            await tx.cart.updateMany({
-              where: { userId: order.userId },
-              data: {}
-            });
-            // We find the cart first to delete items
-            const userCart = await tx.cart.findUnique({
-              where: { userId: order.userId }
-            });
-            if (userCart) {
-              await tx.cartItem.deleteMany({
-                where: { cartId: userCart.id }
-              });
-            }
-          }
           return order
         })
         return result
@@ -197,15 +182,13 @@ export const orderRoutes = new Elysia({ prefix: '/orders' })
       body: t.Object({
         status: t.Union([
           t.Literal('PENDING'), 
-          t.Literal('CONFIRMED'), 
           t.Literal('PROCESSING'),
           t.Literal('SHIPPED'), 
           t.Literal('IN_TRANSIT'),
           t.Literal('OUT_FOR_DELIVERY'),
           t.Literal('DELIVERED'), 
           t.Literal('FAILED'),
-          t.Literal('CANCELLED'),
-          t.Literal('SETTLED')
+          t.Literal('CANCELLED')
         ]),
       }),
     }
