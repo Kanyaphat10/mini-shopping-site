@@ -1,6 +1,6 @@
 # 🛍️ Mini Shopping Site
 
-A full-stack mini e-commerce application built with modern web technologies.
+A modern full-stack mini e-commerce application built with modern web technologies.
 
 ---
 
@@ -18,20 +18,23 @@ A full-stack mini e-commerce application built with modern web technologies.
 
 ## 📁 Project Structure
 
-```
+```bash
 mini-shopping-site/
 ├── apps/
 │   ├── frontend/          # Vite React + TypeScript
 │   │   ├── src/
 │   │   ├── .env
 │   │   └── package.json
+│   │
 │   └── backend/           # Elysia.js API
 │       ├── prisma/
 │       │   ├── schema.prisma
+│       │   ├── migrations/
 │       │   └── seed.ts
 │       ├── src/
 │       ├── .env
 │       └── package.json
+│
 └── docker-compose.yml
 ```
 
@@ -42,6 +45,8 @@ mini-shopping-site/
 - [Bun](https://bun.sh/) >= 1.0
 - [Node.js](https://nodejs.org/) >= 18
 - [Docker](https://www.docker.com/) + Docker Compose
+
+> ⚠️ Backend uses Bun runtime while frontend uses Node.js/npm.
 
 ---
 
@@ -54,19 +59,25 @@ git clone <repo-url>
 cd mini-shopping-site
 ```
 
+---
+
 ### 2. Set up environment variables
 
-**Backend** — create `apps/backend/.env`:
+### Backend — create `apps/backend/.env`
+
 ```env
 DATABASE_URL="postgresql://postgres:yourpassword@localhost:5432/mini-shop"
 ```
 
-**Frontend** — create `apps/frontend/.env`:
+### Frontend — create `apps/frontend/.env`
+
 ```env
 VITE_API_URL=http://localhost:3001
 ```
 
 > ⚠️ Make sure the credentials match your `docker-compose.yml`
+
+---
 
 ### 3. Start the database
 
@@ -76,6 +87,8 @@ docker compose up -d
 # Verify it's running
 docker compose ps
 ```
+
+---
 
 ### 4. Install dependencies
 
@@ -89,12 +102,17 @@ cd ../frontend
 npm install
 ```
 
+---
+
 ### 5. Run database migrations
 
 ```bash
-cd apps/backend
+cd ../backend
 bunx prisma migrate dev --name init
+bunx prisma generate
 ```
+
+---
 
 ### 6. Seed the database
 
@@ -104,12 +122,30 @@ bunx prisma db seed
 
 This will create the following test accounts:
 
-| Email | Role |
-|---|---|
-| admin@example.com | ADMIN |
-| customer@example.com | CUSTOMER |
-| courier@example.com | COURIER |
-| agent@example.com | SERVICE_AGENT |
+| Email | Password | Role |
+|---|---|---|
+| admin@example.com | admin123 | ADMIN |
+| customer@example.com | customer123 | CUSTOMER |
+| courier@example.com | courier123 | COURIER |
+| agent@example.com | agent123 | SERVICE_AGENT |
+
+---
+
+### Reset the database (Development only)
+
+```bash
+bunx prisma migrate reset
+```
+
+This will:
+- Reset the database
+- Re-run all migrations
+- Regenerate Prisma Client
+- Re-seed the database
+
+> ⚠️ All data will be deleted.
+
+---
 
 ### 7. (Optional) Inspect the database
 
@@ -117,66 +153,83 @@ This will create the following test accounts:
 bunx prisma studio
 ```
 
-Opens Prisma Studio at `http://localhost:5555`
-
 ---
 
 ## 🖥️ Running the App
 
 Open **3 terminals**:
 
-**Terminal 1 — Database**
+---
+
+### Terminal 1 — Database
+
 ```bash
 docker compose up -d
 ```
 
-**Terminal 2 — Backend**
+---
+
+### Terminal 2 — Backend
+
 ```bash
 cd apps/backend
 bun dev
 ```
+
 > API runs at `http://localhost:3001`
 
-**Terminal 3 — Frontend**
+---
+
+### Terminal 3 — Frontend
+
 ```bash
 cd apps/frontend
 npm run dev
 ```
+
 > App runs at `http://localhost:5173`
 
 ---
 
-## 📡 API Endpoints
+### 🔐 Auth
 
-### Auth
 | Method | Endpoint | Description |
 |---|---|---|
-| POST | `/api/auth/login` | Login |
-| POST | `/api/auth/logout` | Logout |
-| GET | `/api/auth/session/validate` | Validate session |
+| POST | `/auth/login` | Login |
+| POST | `/auth/logout` | Logout |
+| GET | `/auth/session/validate` | Validate session |
 
-### Products
+---
+
+### 📦 Products
+
 | Method | Endpoint | Description |
 |---|---|---|
-| GET | `/api/products` | Get all products |
-| GET | `/api/products/:id` | Get product by ID |
-| POST | `/api/products` | Create product (ADMIN) |
-| PUT | `/api/products/:id` | Update product (ADMIN) |
-| DELETE | `/api/products/:id` | Delete product (ADMIN) |
+| GET | `/products` | Get all products |
+| GET | `/products/:id` | Get product by ID |
+| POST | `/products` | Create product (ADMIN) |
+| PUT | `/products/:id` | Update product (ADMIN) |
+| DELETE | `/products/:id` | Delete product (ADMIN) |
 
-### Cart
+---
+
+### 🛒 Cart
+
 | Method | Endpoint | Description |
 |---|---|---|
-| GET | `/api/cart` | Get current user's cart |
-| POST | `/api/cart/items` | Add item to cart |
-| DELETE | `/api/cart/items/:id` | Remove item from cart |
+| GET | `/cart` | Get current user's cart |
+| POST | `/cart/items` | Add item to cart |
+| DELETE | `/cart/items/:id` | Remove item from cart |
 
-### Orders
+---
+
+### 📋 Orders
+
 | Method | Endpoint | Description |
 |---|---|---|
-| GET | `/api/orders` | Get all orders |
-| GET | `/api/orders/:id` | Get order by ID |
-| POST | `/api/orders` | Create order |
+| GET | `/orders` | Get all orders |
+| GET | `/orders/:id` | Get order by ID |
+| POST | `/orders` | Create order |
 
 ---
 
@@ -184,7 +237,107 @@ npm run dev
 
 | Role | Description |
 |---|---|
-| `ADMIN` | Manage products, view all orders |
-| `CUSTOMER` | Browse products, manage cart, place orders |
+| `ADMIN` | Manage products and view all orders |
+| `CUSTOMER` | Browse products, manage cart, and place orders |
 | `COURIER` | View and update shipment status |
 | `SERVICE_AGENT` | Customer support access |
+
+---
+
+## ⚡ Useful Commands
+
+### Backend Commands
+
+```bash
+cd apps/backend
+```
+
+Install dependencies
+
+```bash
+bun install
+```
+
+Run backend server
+
+```bash
+bun dev
+```
+
+Run migrations
+
+```bash
+bunx prisma migrate dev --name init
+```
+
+Generate Prisma Client
+
+```bash
+bunx prisma generate
+```
+
+Seed database
+
+```bash
+bunx prisma db seed
+```
+
+Open Prisma Studio
+
+```bash
+bunx prisma studio
+```
+
+Reset database
+
+```bash
+bunx prisma migrate reset
+```
+
+---
+
+### Frontend Commands
+
+```bash
+cd apps/frontend
+```
+
+Install dependencies
+
+```bash
+npm install
+```
+
+Run frontend
+
+```bash
+npm run dev
+```
+
+---
+
+### Docker Commands
+
+Start containers
+
+```bash
+docker compose up -d
+```
+
+Stop containers
+
+```bash
+docker compose down
+```
+
+Check running containers
+
+```bash
+docker compose ps
+```
+
+View logs
+
+```bash
+docker compose logs
+```
