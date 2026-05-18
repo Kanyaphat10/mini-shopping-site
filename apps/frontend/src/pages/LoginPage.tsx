@@ -55,7 +55,7 @@ export default function LoginPage() {
     <div className="flex items-center justify-center min-h-96">
       <div className="w-full max-w-md">
         <div className="bg-card rounded-lg border border-border p-8">
-          <h1 className="text-3xl font-bold mb-2">Customer Sign In</h1>
+          <h1 className="text-3xl font-bold mb-2">Sign In</h1>
           <p className="text-muted-foreground mb-6">Welcome to Mini Shop</p>
 
           {error && (
