@@ -26,7 +26,7 @@ describe('LoginPage', () => {
       </BrowserRouter>
     );
 
-    expect(screen.getByText('Sign In')).toBeDefined();
+    expect(screen.getByText('Customer Sign In')).toBeDefined();
     expect(screen.getByPlaceholderText('you@example.com')).toBeDefined();
     expect(screen.getByPlaceholderText('••••••')).toBeDefined();
   });
